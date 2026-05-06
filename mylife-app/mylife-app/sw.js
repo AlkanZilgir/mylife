@@ -1,5 +1,5 @@
 const CACHE = 'mylife-v1';
-const ASSETS = ['/', '/index.html', '/manifest.json'];
+const ASSETS = ['/mylife/mylife-app/mylife-app/', '/mylife/mylife-app/mylife-app/index.html'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
