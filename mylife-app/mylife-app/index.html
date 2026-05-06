@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MyLife">
+<meta name="theme-color" content="#0a0a0f">
+<title>MyLife — Personal Dashboard</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --bg2: #111118;
+  --bg3: #1a1a26;
+  --bg4: #222232;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --text: #f0f0fa;
+  --text2: #9090b0;
+  --text3: #5a5a7a;
+  --accent: #6c63ff;
+  --accent2: #8b85ff;
+  --accentbg: rgba(108,99,255,0.12);
+  --green: #22d3a0;
+  --greenbg: rgba(34,211,160,0.1);
+  --amber: #f5a623;
+  --amberbg: rgba(245,166,35,0.1);
+  --red: #ff5b5b;
+  --redbg: rgba(255,91,91,0.1);
+  --blue: #4da6ff;
+  --bluebg: rgba(77,166,255,0.1);
+  --nav-h: 80px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body { height:100%; background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; overflow:hidden; }
+h1,h2,h3,.display { font-family:'Syne',sans-serif; }
+
+/* APP SHELL */
+#app { display:flex; flex-direction:column; height:100%; height:100dvh; }
+#header {
+  padding: calc(var(--safe-top) + 16px) 20px 14px;
+  background: var(--bg);
+  border-bottom: 0.5px solid var(--border);
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: space-between;
+}
+#header-left .label { font-size:11px; color:var(--text3); letter-spacing:.05em; text-transform:uppercase; }
+#header-left .title { font-family:'Syne',sans-serif; font-size:20px; font-weight:700; color:var(--text); }
+#refresh-btn {
+  width:36px; height:36px; border-radius:50%; border:0.5px solid var(--border2);
+  background:var(--bg3); color:var(--text2); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px;
+  transition: background .2s;
+}
+#refresh-btn:active { background:var(--bg4); }
+
+/* SCROLL AREA */
+#scroll { flex:1; overflow-y:auto; overflow-x:hidden; padding-bottom:calc(var(--nav-h) + var(--safe-bottom) + 16px); }
+#scroll::-webkit-scrollbar { display:none; }
+
+/* NAV */
+#nav {
+  position:fixed; bottom:0; left:0; right:0; z-index:100;
+  background: rgba(10,10,15,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 0.5px solid var(--border);
+  padding: 8px 0 calc(var(--safe-bottom) + 8px);
+  display:flex;
+}
+.nav-btn {
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;
+  background:none; border:none; cursor:pointer; padding:6px 0; color:var(--text3);
+  transition:color .2s;
+}
+.nav-btn svg { width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+.nav-btn span { font-size:10px; font-family:'DM Sans',sans-serif; font-weight:500; letter-spacing:.02em; }
+.nav-btn.active { color:var(--accent2); }
+
+/* PAGES */
+.page { display:none; padding:0; }
+.page.active { display:block; }
+
+/* CARDS */
+.card {
+  margin:12px 16px 0;
+  background:var(--bg2); border:0.5px solid var(--border); border-radius:18px; overflow:hidden;
+}
+.card-header {
+  display:flex; align-items:center; gap:10px; padding:14px 16px 10px;
+}
+.card-icon {
+  width:32px; height:32px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;
+}
+.card-title { font-family:'Syne',sans-serif; font-size:14px; font-weight:600; flex:1; }
+.card-action {
+  font-size:11px; font-weight:500; color:var(--accent2);
+  background:var(--accentbg); border:none; border-radius:20px;
+  padding:5px 12px; cursor:pointer; white-space:nowrap;
+}
+.card-action:active { opacity:.7; }
+.card-body { padding:0 16px 16px; }
+
+/* BRIEFING */
+.briefing-card {
+  margin:16px 16px 0;
+  background: linear-gradient(135deg, #12122a 0%, #1a1230 100%);
+  border:0.5px solid rgba(108,99,255,0.25); border-radius:20px; padding:18px;
+}
+.briefing-badge {
+  display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:500;
+  color:var(--accent2); background:var(--accentbg); border-radius:20px; padding:4px 10px; margin-bottom:12px;
+}
+.briefing-badge svg { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2; }
+.briefing-text { font-size:14px; line-height:1.7; color:var(--text2); }
+.briefing-refresh { font-size:11px; color:var(--text3); margin-top:10px; }
+
+/* WEATHER */
+.weather-main { display:flex; align-items:flex-end; gap:4px; padding:0 16px 4px; }
+.weather-temp { font-family:'Syne',sans-serif; font-size:52px; font-weight:700; line-height:1; color:var(--text); }
+.weather-unit { font-size:22px; color:var(--text3); margin-bottom:8px; }
+.weather-desc { font-size:13px; color:var(--text2); padding:0 16px 16px; }
+.weather-row { display:flex; gap:8px; padding:0 16px 16px; flex-wrap:wrap; }
+.weather-pill {
+  font-size:11px; font-weight:500; color:var(--blue); background:var(--bluebg);
+  border-radius:20px; padding:4px 10px;
+}
+
+/* SECTIONS LIST */
+.section-row {
+  display:flex; align-items:center; gap:12px;
+  padding:12px 16px; border-bottom:0.5px solid var(--border);
+}
+.section-row:last-child { border-bottom:none; }
+.section-row-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.section-row-text { flex:1; }
+.section-row-title { font-size:14px; font-weight:500; color:var(--text); }
+.section-row-sub { font-size:12px; color:var(--text3); margin-top:1px; }
+.section-row-arrow { color:var(--text3); font-size:18px; }
+.connect-row { cursor:pointer; }
+.connect-row:active { background:var(--bg3); }
+
+/* NEWS */
+.news-item { padding:12px 16px; border-bottom:0.5px solid var(--border); cursor:pointer; }
+.news-item:last-child { border-bottom:none; }
+.news-item:active { background:var(--bg3); }
+.news-headline { font-size:13px; font-weight:500; color:var(--text); line-height:1.45; }
+.news-source { font-size:11px; color:var(--text3); margin-top:3px; }
+
+/* DATE HEADER */
+.date-header { padding:20px 16px 6px; }
+.date-header .dh-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; }
+.date-header .dh-sub { font-size:12px; color:var(--text3); margin-top:2px; }
+
+/* EMPTY STATE */
+.empty-state {
+  text-align:center; padding:32px 24px;
+}
+.empty-icon { font-size:40px; margin-bottom:12px; opacity:.3; }
+.empty-title { font-size:14px; font-weight:500; color:var(--text2); margin-bottom:6px; }
+.empty-sub { font-size:12px; color:var(--text3); line-height:1.5; }
+.empty-btn {
+  margin-top:16px; display:inline-block; font-size:13px; font-weight:500;
+  color:var(--accent2); background:var(--accentbg); border:none; border-radius:20px;
+  padding:10px 20px; cursor:pointer;
+}
+.empty-btn:active { opacity:.7; }
+
+/* ASK BAR */
+.ask-bar {
+  margin:12px 16px 0;
+  background:var(--bg2); border:0.5px solid var(--border); border-radius:16px;
+  display:flex; align-items:center; gap:10px; padding:10px 14px;
+}
+.ask-bar input {
+  flex:1; background:none; border:none; outline:none; font-size:14px;
+  color:var(--text); font-family:'DM Sans',sans-serif;
+}
+.ask-bar input::placeholder { color:var(--text3); }
+.ask-bar button {
+  width:32px; height:32px; border-radius:50%; background:var(--accent); border:none;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.ask-bar button svg { width:16px; height:16px; stroke:#fff; fill:none; stroke-width:2.5; stroke-linecap:round; }
+.ask-bar button:active { opacity:.8; }
+
+/* LOADING */
+.loading-line { height:14px; border-radius:7px; background:var(--bg3); margin-bottom:8px; animation:shimmer 1.5s infinite; }
+@keyframes shimmer { 0%,100%{opacity:.4} 50%{opacity:.8} }
+.spin { animation:spin 1s linear infinite; display:inline-block; }
+@keyframes spin { to{transform:rotate(360deg)} }
+
+/* SECTION BADGES */
+.badge { font-size:10px; font-weight:600; padding:2px 7px; border-radius:10px; }
+.badge-green { background:var(--greenbg); color:var(--green); }
+.badge-amber { background:var(--amberbg); color:var(--amber); }
+.badge-red { background:var(--redbg); color:var(--red); }
+
+/* CONNECT SERVICES PAGE */
+.services-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:12px 16px 0; }
+.service-card {
+  background:var(--bg2); border:0.5px solid var(--border); border-radius:16px;
+  padding:16px 14px; cursor:pointer; display:flex; flex-direction:column; gap:8px;
+  transition:border-color .2s;
+}
+.service-card:active { border-color:var(--border2); background:var(--bg3); }
+.service-card.connected { border-color:rgba(34,211,160,0.25); }
+.service-icon { font-size:26px; }
+.service-name { font-size:13px; font-weight:600; color:var(--text); }
+.service-status { font-size:11px; }
+
+/* MODAL */
+.modal-overlay {
+  display:none; position:fixed; inset:0; z-index:200;
+  background:rgba(0,0,0,0.7); backdrop-filter:blur(8px);
+  align-items:flex-end; justify-content:center;
+}
+.modal-overlay.open { display:flex; }
+.modal {
+  background:var(--bg2); border:0.5px solid var(--border2);
+  border-radius:28px 28px 0 0; padding:24px 20px calc(var(--safe-bottom) + 32px);
+  width:100%; max-width:600px;
+}
+.modal-handle { width:36px; height:4px; background:var(--border2); border-radius:2px; margin:0 auto 20px; }
+.modal-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; margin-bottom:8px; }
+.modal-desc { font-size:13px; color:var(--text2); line-height:1.6; margin-bottom:20px; }
+.modal-btn {
+  width:100%; padding:15px; border-radius:14px; border:none; cursor:pointer;
+  font-size:15px; font-weight:600; font-family:'Syne',sans-serif;
+}
+.modal-btn-primary { background:var(--accent); color:#fff; margin-bottom:10px; }
+.modal-btn-secondary { background:var(--bg3); color:var(--text2); }
+.modal-btn:active { opacity:.85; }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <div id="header">
+    <div id="header-left">
+      <div class="label" id="header-date">Loading...</div>
+      <div class="title" id="header-greeting">MyLife</div>
+    </div>
+    <button id="refresh-btn" onclick="refreshAll()" aria-label="Refresh">
+      <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+    </button>
+  </div>
+
+  <div id="scroll">
+    <!-- HOME PAGE -->
+    <div id="page-home" class="page active">
+
+      <div class="briefing-card">
+        <div class="briefing-badge">
+          <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+          AI Briefing
+        </div>
+        <div class="briefing-text" id="briefing-text">
+          <div class="loading-line" style="width:90%"></div>
+          <div class="loading-line" style="width:70%"></div>
+          <div class="loading-line" style="width:80%"></div>
+        </div>
+        <div class="briefing-refresh" id="briefing-time"></div>
+      </div>
+
+      <!-- Weather -->
+      <div class="card" style="margin-top:12px;">
+        <div class="card-header">
+          <div class="card-icon" style="background:var(--bluebg);">🌤</div>
+          <div class="card-title">Weather · Vilnius</div>
+          <span class="badge badge-green" id="weather-badge" style="visibility:hidden">Live</span>
+        </div>
+        <div class="weather-main">
+          <div class="weather-temp" id="w-temp">—</div>
+          <div class="weather-unit">°C</div>
+        </div>
+        <div class="weather-desc" id="w-desc">Loading current conditions...</div>
+        <div class="weather-row" id="w-pills"></div>
+      </div>
+
+      <!-- Ask -->
+      <div class="ask-bar" style="margin-top:12px;">
+        <input type="text" id="ask-input" placeholder="Ask anything about your day...">
+        <button onclick="sendAsk()" aria-label="Send">
+          <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+
+      <!-- Quick asks -->
+      <div style="display:flex;gap:8px;padding:10px 16px 0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;">
+        <button class="card-action" style="white-space:nowrap;" onclick="quickAsk('What should I focus on today?')">Today's focus</button>
+        <button class="card-action" style="white-space:nowrap;" onclick="quickAsk('What is the weather forecast for Vilnius this week?')">Week forecast</button>
+        <button class="card-action" style="white-space:nowrap;" onclick="quickAsk('What are the top news stories in Lithuania today?')">Top news</button>
+        <button class="card-action" style="white-space:nowrap;" onclick="quickAsk('What are fun things to do in Vilnius this weekend?')">Weekend ideas</button>
+      </div>
+
+      <!-- Services needing connection -->
+      <div class="card" style="margin-top:12px;">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(255,255,255,0.05);">🔗</div>
+          <div class="card-title">Connect your apps</div>
+          <button class="card-action" onclick="goPage('connect')">See all</button>
+        </div>
+        <div class="card-body" style="padding-top:0;">
+          <div class="section-row connect-row" onclick="connectModal('Gmail', 'See your inbox, unread emails, and important messages right here in MyLife.', '📧')">
+            <div class="section-row-icon" style="background:var(--redbg);">📧</div>
+            <div class="section-row-text">
+              <div class="section-row-title">Gmail / Email</div>
+              <div class="section-row-sub">Tap to connect</div>
+            </div>
+            <div style="font-size:11px;color:var(--accent2);font-weight:500;">+ Connect</div>
+          </div>
+          <div class="section-row connect-row" onclick="connectModal('Google Calendar', 'See all your events, meetings, and reminders in one place.', '📅')">
+            <div class="section-row-icon" style="background:var(--bluebg);">📅</div>
+            <div class="section-row-text">
+              <div class="section-row-title">Google Calendar</div>
+              <div class="section-row-sub">Tap to connect</div>
+            </div>
+            <div style="font-size:11px;color:var(--accent2);font-weight:500;">+ Connect</div>
+          </div>
+          <div class="section-row connect-row" onclick="connectModal('Todoist', 'Track your tasks, projects, and to-dos from Todoist or Reminders.', '✅')">
+            <div class="section-row-icon" style="background:var(--greenbg);">✅</div>
+            <div class="section-row-text">
+              <div class="section-row-title">Tasks & Reminders</div>
+              <div class="section-row-sub">Tap to connect</div>
+            </div>
+            <div style="font-size:11px;color:var(--accent2);font-weight:500;">+ Connect</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:8px;"></div>
+    </div>
+
+    <!-- NEWS PAGE -->
+    <div id="page-news" class="page">
+      <div class="date-header">
+        <div class="dh-title">Vilnius & Lithuania</div>
+        <div class="dh-sub" id="news-updated">Loading latest news...</div>
+      </div>
+      <div class="card">
+        <div id="news-list">
+          <div style="padding:20px 16px;">
+            <div class="loading-line" style="width:90%"></div>
+            <div class="loading-line" style="width:60%"></div>
+            <div class="loading-line" style="width:80%"></div>
+            <div class="loading-line" style="width:50%"></div>
+            <div class="loading-line" style="width:75%"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:10px;">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(255,255,255,0.05);">🌍</div>
+          <div class="card-title">World headlines</div>
+        </div>
+        <div id="world-news-list">
+          <div style="padding:0 16px 16px;">
+            <div class="loading-line" style="width:80%"></div>
+            <div class="loading-line" style="width:65%"></div>
+            <div class="loading-line" style="width:70%"></div>
+          </div>
+        </div>
+      </div>
+      <div style="height:8px;"></div>
+    </div>
+
+    <!-- CALENDAR PAGE -->
+    <div id="page-calendar" class="page">
+      <div class="date-header">
+        <div class="dh-title" id="cal-title">Today</div>
+        <div class="dh-sub" id="cal-date"></div>
+      </div>
+      <div class="card">
+        <div class="empty-state">
+          <div class="empty-icon">📅</div>
+          <div class="empty-title">Calendar not connected</div>
+          <div class="empty-sub">Connect Google Calendar, Apple Calendar, or Outlook to see your events, meetings, and reminders here.</div>
+          <button class="empty-btn" onclick="connectModal('Google Calendar', 'See all your events, meetings, and reminders. MyLife will show you what\'s coming up today and this week.', '📅')">Connect Calendar</button>
+        </div>
+      </div>
+      <div class="card" style="margin-top:10px;">
+        <div class="card-header">
+          <div class="card-icon" style="background:var(--amberbg);">✈️</div>
+          <div class="card-title">Flights & Travel</div>
+          <button class="card-action" onclick="connectModal('your email for flight bookings', 'MyLife will automatically detect flight bookings and hotel confirmations in your email and show them here.', '✈️')">Connect</button>
+        </div>
+        <div style="padding:0 16px 16px;">
+          <div class="empty-sub">Connect your email to automatically detect flight bookings, hotel confirmations, and travel itineraries.</div>
+        </div>
+      </div>
+      <div style="height:8px;"></div>
+    </div>
+
+    <!-- TASKS PAGE -->
+    <div id="page-tasks" class="page">
+      <div class="date-header">
+        <div class="dh-title">Tasks & Goals</div>
+        <div class="dh-sub">Your to-dos and priorities</div>
+      </div>
+      <div class="card">
+        <div class="empty-state">
+          <div class="empty-icon">✅</div>
+          <div class="empty-title">No tasks connected</div>
+          <div class="empty-sub">Connect Todoist, Notion, Reminders, or Trello to manage your tasks right from MyLife.</div>
+          <button class="empty-btn" onclick="connectModal('Todoist or Reminders', 'Track all your tasks, deadlines, and projects in one place. MyLife will show your most urgent to-dos every morning.', '✅')">Connect Tasks</button>
+        </div>
+      </div>
+      <div class="card" style="margin-top:10px;">
+        <div class="card-header">
+          <div class="card-icon" style="background:var(--greenbg);">📬</div>
+          <div class="card-title">Email</div>
+          <button class="card-action" onclick="connectModal('Gmail or Outlook', 'See your inbox, unread count, and important messages. MyLife can flag urgent emails every morning.', '📧')">Connect</button>
+        </div>
+        <div style="padding:0 16px 16px;">
+          <div class="empty-sub">Connect Gmail or Outlook to see your emails here — unread count, important senders, and urgent messages.</div>
+        </div>
+      </div>
+      <div style="height:8px;"></div>
+    </div>
+
+    <!-- CONNECT PAGE -->
+    <div id="page-connect" class="page">
+      <div class="date-header">
+        <div class="dh-title">Connect your apps</div>
+        <div class="dh-sub">Bring your whole life into MyLife</div>
+      </div>
+      <div class="services-grid">
+        <div class="service-card" onclick="connectModal('Gmail', 'Get your inbox, unread count, and important emails shown every morning in your briefing.', '📧')">
+          <div class="service-icon">📧</div>
+          <div class="service-name">Gmail</div>
+          <div class="service-status" style="color:var(--accent2)">+ Connect</div>
+        </div>
+        <div class="service-card" onclick="connectModal('Outlook', 'Connect your Microsoft email and calendar in one step.', '📨')">
+          <div class="service-icon">📨</div>
+          <div class="service-name">Outlook</div>
+          <div class="service-status" style="color:var(--accent2)">+ Connect</div>
+        </div>
+        <div class="service-card" onclick="connectModal('Google Calendar', 'See today\'s events, upcoming meetings, and reminders.', '📅')">
+          <div class="service-icon">📅</div>
+          <div class="service-name">Google Calendar</div>
+          <div class="service-status" style="color:var(--accent2)">+ Connect</div>
+        </div>
+        <div class="service-card" onclick="connectModal('Apple Calendar', 'Sync your iCloud calendar and see all your events here.', '🍏')">
+          <div class="service-icon">🍏</div>
+          <div class="service-name">Apple Calendar</div>
+          <div class="service-status" style="color:var(--accent2)">+ Connect</div>
+        </div>
+        <div class="service-card" onclick="connectModal('Todoist', 'Track your tasks, projects, and deadlines from Todoist.', '✅')">
+          <div class="service-icon">✅</div>
+          <div class="service-name">Todoist</div>
+          <div class="service-status" style="color:var(--accent2)">+ Connect</div>
+        </div>
+        <div class="service-card" onclick="connectModal('Notion', 'See your Notion tasks and databases in your daily briefing.', '📓')">
+          <div class="service-icon">📓</div>
+          <div class="service-name">Notion</div>
+          <div class="service-status" style="color:var(--accent2)">+ Connect</div>
+        </div>
+        <div class="service-card" onclick="connectModal('Slack', 'Get your Slack unread count and important messages each morning.', '💬')">
+          <div class="service-icon">💬</div>
+          <div class="service-name">Slack</div>
+          <div class="service-status" style="color:var(--accent2)">+ Connect</div>
+        </div>
+        <div class="service-card" onclick="connectModal('GitHub', 'See your pull requests, issues, and code activity at a glance.', '🐙')">
+          <div class="service-icon">🐙</div>
+          <div class="service-name">GitHub</div>
+          <div class="service-status" style="color:var(--accent2)">+ Connect</div>
+        </div>
+        <div class="service-card" onclick="connectModal('Spotify', 'See your recent music and get daily playlist recommendations.', '🎵')">
+          <div class="service-icon">🎵</div>
+          <div class="service-name">Spotify</div>
+          <div class="service-status" style="color:var(--accent2)">+ Connect</div>
+        </div>
+        <div class="service-card" onclick="connectModal('Apple Health or Google Fit', 'Track your steps, sleep, and activity in your morning briefing.', '❤️')">
+          <div class="service-icon">❤️</div>
+          <div class="service-name">Health</div>
+          <div class="service-status" style="color:var(--accent2)">+ Connect</div>
+        </div>
+      </div>
+      <div style="height:20px;"></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav id="nav">
+    <button class="nav-btn active" id="nav-home" onclick="goPage('home')">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Home</span>
+    </button>
+    <button class="nav-btn" id="nav-news" onclick="goPage('news')">
+      <svg viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z"/><path d="M16 2v20"/><line x1="8" y1="7" x2="12" y2="7"/><line x1="8" y1="12" x2="12" y2="12"/><line x1="8" y1="17" x2="12" y2="17"/></svg>
+      <span>News</span>
+    </button>
+    <button class="nav-btn" id="nav-calendar" onclick="goPage('calendar')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span>Calendar</span>
+    </button>
+    <button class="nav-btn" id="nav-tasks" onclick="goPage('tasks')">
+      <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span>Tasks</span>
+    </button>
+    <button class="nav-btn" id="nav-connect" onclick="goPage('connect')">
+      <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      <span>Connect</span>
+    </button>
+  </nav>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div style="font-size:36px;margin-bottom:12px;" id="modal-icon">🔗</div>
+    <div class="modal-title" id="modal-title">Connect Service</div>
+    <div class="modal-desc" id="modal-desc">Connect this service to see it in your dashboard.</div>
+    <button class="modal-btn modal-btn-primary" id="modal-cta" onclick="modalConnect()">Open in Claude to Connect</button>
+    <button class="modal-btn modal-btn-secondary" onclick="closeModal()">Maybe later</button>
+  </div>
+</div>
+
+<script>
+// Init date/time
+const now = new Date();
+const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const h = now.getHours();
+document.getElementById('header-date').textContent = `${DAYS[now.getDay()]}, ${MONTHS[now.getMonth()]} ${now.getDate()}`;
+document.getElementById('header-greeting').textContent = h < 12 ? 'Good morning ☀️' : h < 17 ? 'Good afternoon 🌤' : 'Good evening 🌙';
+document.getElementById('cal-title').textContent = DAYS[now.getDay()];
+document.getElementById('cal-date').textContent = `${MONTHS[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+
+// Navigation
+function goPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.getElementById('nav-' + page).classList.add('active');
+  document.getElementById('scroll').scrollTop = 0;
+}
+
+// Claude API
+async function claude(prompt, search) {
+  const body = {
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 1000,
+    messages: [{ role: 'user', content: prompt }]
+  };
+  if (search) body.tools = [{ type: 'web_search_20250305', name: 'web_search' }];
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const d = await r.json();
+  return d.content.map(b => b.type === 'text' ? b.text : '').filter(Boolean).join('\n').trim();
+}
+
+// Briefing
+async function loadBriefing() {
+  const el = document.getElementById('briefing-text');
+  el.innerHTML = '<div class="loading-line" style="width:90%"></div><div class="loading-line" style="width:70%"></div><div class="loading-line" style="width:80%"></div>';
+  try {
+    const t = await claude(`Today is ${now.toDateString()} in Vilnius, Lithuania. Search for: 1) current weather in Vilnius, 2) top 2 news stories from Lithuania today. Write a short friendly morning briefing in 2-3 natural sentences. Mention the weather and one news highlight. Warm, direct tone. No markdown, no bullet points, plain text only.`, true);
+    el.textContent = t;
+    document.getElementById('briefing-time').textContent = 'Updated ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  } catch(e) {
+    el.textContent = 'Could not load briefing. Tap refresh to try again.';
+  }
+}
+
+// Weather
+async function loadWeather() {
+  try {
+    const t = await claude(`Search for the current weather in Vilnius Lithuania right now today ${now.toDateString()}. Reply with ONLY these 4 lines, nothing else:
+LINE1: temperature as integer only, like: 14
+LINE2: short weather description, like: Partly cloudy
+LINE3: wind info, like: Wind 12 km/h SW
+LINE4: humidity, like: Humidity 68%`, true);
+    const lines = t.split('\n').map(l => l.replace(/^LINE\d+:\s*/i,'').trim()).filter(Boolean);
+    document.getElementById('w-temp').textContent = lines[0] || '—';
+    document.getElementById('w-desc').textContent = lines[1] || '';
+    const pills = [lines[2], lines[3]].filter(Boolean);
+    document.getElementById('w-pills').innerHTML = pills.map(p => `<div class="weather-pill">${p}</div>`).join('');
+    document.getElementById('weather-badge').style.visibility = 'visible';
+  } catch(e) {
+    document.getElementById('w-desc').textContent = 'Weather unavailable';
+  }
+}
+
+// News
+async function loadNews() {
+  try {
+    const t = await claude(`Search for the top 5 news headlines from Vilnius and Lithuania today ${now.toDateString()}. Return exactly 5 items. Each item on its own line formatted as: HEADLINE | SOURCE (e.g. LRT, Delfi, BNS, Reuters). Max 15 words per headline. No numbers, no bullets, no extra text.`, true);
+    const lines = t.split('\n').map(l => l.trim()).filter(l => l && l.includes('|')).slice(0,5);
+    document.getElementById('news-list').innerHTML = lines.map(l => {
+      const [hl, src] = l.split('|').map(x => x.trim());
+      return `<div class="news-item"><div class="news-headline">${hl}</div><div class="news-source">${src||'Lithuania'}</div></div>`;
+    }).join('') || '<div style="padding:16px;color:var(--text3);font-size:13px;">No news loaded. Tap refresh.</div>';
+    document.getElementById('news-updated').textContent = 'Updated ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  } catch(e) {
+    document.getElementById('news-list').innerHTML = '<div style="padding:16px;color:var(--text3);font-size:13px;">Could not load news. Tap refresh.</div>';
+  }
+}
+
+async function loadWorldNews() {
+  try {
+    const t = await claude(`Search for the top 3 world news headlines right now. Return exactly 3 items. Each item: HEADLINE | SOURCE. Max 12 words each. No extra text.`, true);
+    const lines = t.split('\n').map(l => l.trim()).filter(l => l && l.includes('|')).slice(0,3);
+    document.getElementById('world-news-list').innerHTML = lines.map(l => {
+      const [hl, src] = l.split('|').map(x => x.trim());
+      return `<div class="news-item"><div class="news-headline">${hl}</div><div class="news-source">${src||'World'}</div></div>`;
+    }).join('') || '<div style="padding:0 16px 16px;color:var(--text3);font-size:13px;">No world news loaded.</div>';
+  } catch(e) {}
+}
+
+function refreshAll() {
+  const btn = document.getElementById('refresh-btn');
+  btn.style.animation = 'spin 1s linear infinite';
+  btn.disabled = true;
+  Promise.all([loadBriefing(), loadWeather(), loadNews(), loadWorldNews()]).finally(() => {
+    btn.style.animation = '';
+    btn.disabled = false;
+  });
+}
+
+// Ask
+function sendAsk() {
+  const v = document.getElementById('ask-input').value.trim();
+  if (!v) return;
+  document.getElementById('ask-input').value = '';
+  alert('Opening Claude with: "' + v + '"\n\nIn the full app, this would open a Claude chat with your question and access to all your connected services.');
+}
+function quickAsk(q) {
+  document.getElementById('ask-input').value = q;
+  sendAsk();
+}
+
+// Modal
+let modalService = '';
+function connectModal(service, desc, icon) {
+  modalService = service;
+  document.getElementById('modal-icon').textContent = icon || '🔗';
+  document.getElementById('modal-title').textContent = 'Connect ' + service;
+  document.getElementById('modal-desc').textContent = desc;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modal')) {
+    document.getElementById('modal').classList.remove('open');
+  }
+}
+function modalConnect() {
+  document.getElementById('modal').classList.remove('open');
+  alert(`To connect ${modalService}:\n\n1. Open Claude.ai in your browser\n2. Go to Settings → Integrations\n3. Find ${modalService} and click Connect\n4. Return here and tap Refresh\n\nOr ask Claude: "How do I connect ${modalService} to my dashboard?"`);
+}
+
+// Keyboard dismiss on input blur
+document.getElementById('ask-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendAsk();
+});
+
+// Service worker registration
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// Load data
+loadBriefing();
+loadWeather();
+loadNews();
+loadWorldNews();
+</script>
+</body>
+</html>
