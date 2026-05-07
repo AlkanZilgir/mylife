@@ -6,363 +6,852 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MyLife">
-<meta name="theme-color" content="#0a0a0f">
+<meta name="theme-color" content="#06060f">
 <title>MyLife</title>
-<link rel="manifest" href="data:application/json,%7B%22name%22%3A%22MyLife%22%2C%22short_name%22%3A%22MyLife%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230a0a0f%22%2C%22theme_color%22%3A%22%230a0a0f%22%7D">
+<link rel="manifest" href="data:application/json,%7B%22name%22%3A%22MyLife%22%2C%22short_name%22%3A%22MyLife%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%2306060f%22%2C%22theme_color%22%3A%22%2306060f%22%7D">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
-:root{--bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a26;--bg4:#222232;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--text:#f0f0fa;--text2:#9090b0;--text3:#5a5a7a;--accent:#6c63ff;--accent2:#8b85ff;--accentbg:rgba(108,99,255,0.12);--green:#22d3a0;--greenbg:rgba(34,211,160,0.1);--amber:#f5a623;--amberbg:rgba(245,166,35,0.1);--red:#ff5b5b;--redbg:rgba(255,91,91,0.1);--blue:#4da6ff;--bluebg:rgba(77,166,255,0.1);--safe-bottom:env(safe-area-inset-bottom,0px);--safe-top:env(safe-area-inset-top,0px)}
+:root{
+  --bg:#06060f; --bg2:#0d0d1f; --bg3:#141428; --bg4:#1c1c38;
+  --glass:rgba(255,255,255,0.04); --glass2:rgba(255,255,255,0.07);
+  --border:rgba(255,255,255,0.06); --border2:rgba(255,255,255,0.12);
+  --text:#f0f0ff; --text2:#8888aa; --text3:#44445a;
+  --purple:#7c5cfc; --purple2:#a78bfa; --purplebg:rgba(124,92,252,0.12);
+  --blue:#38bdf8; --bluebg:rgba(56,189,248,0.10);
+  --teal:#2dd4bf; --tealbg:rgba(45,212,191,0.10);
+  --green:#34d399; --greenbg:rgba(52,211,153,0.10);
+  --amber:#fbbf24; --amberbg:rgba(251,191,36,0.10);
+  --red:#f87171; --redbg:rgba(248,113,113,0.10);
+  --pink:#f472b6; --pinkbg:rgba(244,114,182,0.10);
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-t:env(safe-area-inset-top,0px);
+  --nav-h:72px;
+}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden}
-#app{display:flex;flex-direction:column;height:100%;height:100dvh}
-#header{padding:calc(var(--safe-top) + 14px) 20px 12px;background:var(--bg);border-bottom:0.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
-#hdate{font-size:11px;color:var(--text3);letter-spacing:.04em;text-transform:uppercase}
-#hgreet{font-family:'Syne',sans-serif;font-size:19px;font-weight:700}
-#scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:calc(80px + var(--safe-bottom) + 8px)}
-#scroll::-webkit-scrollbar{display:none}
-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(10,10,15,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:0.5px solid var(--border);padding:6px 0 calc(var(--safe-bottom) + 6px);display:flex}
-.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;padding:6px 0;color:var(--text3);transition:color .2s}
-.nb svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.nb span{font-size:10px;font-family:'DM Sans',sans-serif;font-weight:500}
-.nb.active{color:var(--accent2)}
-.page{display:none}.page.active{display:block}
-.card{margin:10px 14px 0;background:var(--bg2);border:0.5px solid var(--border);border-radius:18px;overflow:hidden}
-.ch{display:flex;align-items:center;gap:10px;padding:14px 16px 10px}
-.ci{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
-.ct{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;flex:1}
-.dh{padding:18px 14px 6px}.dh-t{font-family:'Syne',sans-serif;font-size:18px;font-weight:700}.dh-s{font-size:12px;color:var(--text3);margin-top:2px}
-.w-hero{display:flex;align-items:flex-end;gap:2px;padding:2px 16px 2px}
-.w-temp{font-family:'Syne',sans-serif;font-size:56px;font-weight:700;line-height:1}
-.w-unit{font-size:24px;color:var(--text3);margin-bottom:10px}
-.w-cond{font-size:13px;color:var(--text2);padding:0 16px 8px;display:flex;align-items:center;gap:6px}
-.w-pills{display:flex;gap:6px;flex-wrap:wrap;padding:0 16px 14px}
-.wp{font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px}
-.ni{padding:12px 16px;border-bottom:0.5px solid var(--border);cursor:pointer;text-decoration:none;display:block}
-.ni:last-child{border-bottom:none}
-.ni:active{background:var(--bg3)}
-.ni-hl{font-size:13px;font-weight:500;color:var(--text);line-height:1.45}
-.ni-src{font-size:11px;color:var(--text3);margin-top:3px}
-.task-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:0.5px solid var(--border)}
-.task-item:last-child{border-bottom:none}
-.task-check{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border2);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:none;transition:all .2s}
-.task-check.done{background:var(--green);border-color:var(--green)}
-.task-check.done::after{content:"✓";font-size:12px;color:#000;font-weight:700}
-.task-text{flex:1;font-size:13px;color:var(--text);transition:all .2s}
-.task-text.done{text-decoration:line-through;color:var(--text3)}
-.task-del{background:none;border:none;cursor:pointer;color:var(--text3);font-size:20px;padding:4px;line-height:1}
-.task-del:active{color:var(--red)}
-.add-bar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-top:0.5px solid var(--border)}
-.add-inp{flex:1;background:none;border:none;outline:none;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif}
-.add-inp::placeholder{color:var(--text3)}
-.add-btn{width:30px;height:30px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.add-btn svg{width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round}
-.add-btn:active{opacity:.8}
-.lg{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px 16px}
-.lc{background:var(--bg3);border:0.5px solid var(--border);border-radius:14px;padding:14px;cursor:pointer;text-decoration:none;display:block;transition:background .2s}
-.lc:active{background:var(--bg4)}
-.lc-i{font-size:28px;margin-bottom:8px}
-.lc-n{font-size:13px;font-weight:600;color:var(--text)}
-.lc-s{font-size:11px;color:var(--text3);margin-top:2px}
-.sh{height:14px;border-radius:7px;background:var(--bg3);margin-bottom:8px;animation:shim 1.4s infinite}
-@keyframes shim{0%,100%{opacity:.35}50%{opacity:.7}}
-.badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px}
-.bg-blue{background:var(--bluebg);color:var(--blue)}
-.today-card{margin:14px 14px 0;background:linear-gradient(135deg,#12122a,#1a1230);border:0.5px solid rgba(108,99,255,0.2);border-radius:20px;padding:16px 18px}
-.today-label{font-size:11px;color:var(--accent2);font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px}
-.today-date{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;margin-bottom:4px}
-.today-sub{font-size:12px;color:var(--text2)}
-#rbtn{width:36px;height:36px;border-radius:50%;border:0.5px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center}
-#rbtn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-#rbtn:active{background:var(--bg4)}
-.spin{animation:spin .8s linear infinite}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{display:none}
+
+/* APP */
+#app{display:flex;flex-direction:column;height:100%;height:100dvh;background:var(--bg)}
+
+/* HEADER */
+#hdr{
+  padding:calc(var(--safe-t)+16px) 20px 14px;
+  background:rgba(6,6,15,0.8);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-bottom:0.5px solid var(--border);
+  flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:50;
+}
+.hdr-left{display:flex;flex-direction:column;gap:2px}
+.hdr-date{font-size:11px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;font-weight:500}
+.hdr-greet{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;letter-spacing:-.3px}
+.hdr-loc{font-size:11px;color:var(--purple2);display:flex;align-items:center;gap:4px;margin-top:1px}
+.hdr-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.85)}}
+#rbtn{width:38px;height:38px;border-radius:50%;background:var(--glass2);border:0.5px solid var(--border2);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+#rbtn:active{background:var(--bg4);transform:scale(.92)}
+#rbtn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.rspin{animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.qbtn{font-size:12px;background:var(--bg3);border:0.5px solid var(--border);border-radius:20px;padding:6px 14px;color:var(--text2);cursor:pointer}
-.qbtn:active{background:var(--bg4)}
+
+/* SCROLL */
+#scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:calc(var(--nav-h) + var(--safe-b) + 12px)}
+
+/* NAV */
+#nav{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:rgba(6,6,15,0.85);
+  backdrop-filter:blur(32px);-webkit-backdrop-filter:blur(32px);
+  border-top:0.5px solid var(--border);
+  height:calc(var(--nav-h) + var(--safe-b));
+  padding-bottom:var(--safe-b);
+  display:flex;align-items:flex-start;padding-top:8px;
+}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;background:none;border:none;cursor:pointer;padding:6px 4px;color:var(--text3);transition:color .25s;position:relative}
+.nb svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:all .25s}
+.nb span{font-size:10px;font-weight:500;font-family:'DM Sans',sans-serif;letter-spacing:.02em}
+.nb.active{color:var(--purple2)}
+.nb.active svg{stroke:var(--purple2)}
+.nb-pip{position:absolute;top:4px;right:calc(50% - 14px);width:5px;height:5px;border-radius:50%;background:var(--purple);display:none}
+.nb.active .nb-pip{display:block}
+
+/* PAGES */
+.page{display:none;animation:fadein .25s ease}.page.active{display:block}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── CARDS ── */
+.card{margin:10px 14px 0;background:var(--glass);border:0.5px solid var(--border);border-radius:22px;overflow:hidden;backdrop-filter:blur(12px)}
+.card-glow{box-shadow:0 0 40px rgba(124,92,252,0.08)}
+.ch{display:flex;align-items:center;gap:10px;padding:14px 16px 8px}
+.ci{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.ct{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;flex:1;letter-spacing:-.2px}
+.ca{font-size:11px;font-weight:600;color:var(--purple2);background:var(--purplebg);border:none;border-radius:20px;padding:5px 12px;cursor:pointer;white-space:nowrap}
+.ca:active{opacity:.7}
+.cb{padding:0 16px 16px}
+
+/* ── SECTION HEADING ── */
+.sh{padding:20px 18px 8px;display:flex;align-items:flex-end;justify-content:space-between}
+.sh-t{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.5px}
+.sh-s{font-size:12px;color:var(--text3)}
+
+/* ── HERO SUMMARY ── */
+.hero{
+  margin:14px 14px 0;
+  background:linear-gradient(135deg,#0d0a2a 0%,#110d32 40%,#0a1530 100%);
+  border:0.5px solid rgba(124,92,252,0.2);
+  border-radius:24px;padding:20px;
+  position:relative;overflow:hidden;
+}
+.hero::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;background:radial-gradient(circle,rgba(124,92,252,0.15) 0%,transparent 70%);pointer-events:none}
+.hero::after{content:'';position:absolute;bottom:-30px;left:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(56,189,248,0.08) 0%,transparent 70%);pointer-events:none}
+.hero-loc{font-size:11px;color:var(--purple2);font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.hero-greeting{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;letter-spacing:-.5px;margin-bottom:14px;line-height:1.15}
+.hero-items{display:flex;flex-direction:column;gap:8px}
+.hero-item{display:flex;align-items:flex-start;gap:10px;background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.07);border-radius:14px;padding:11px 13px}
+.hero-icon{font-size:18px;flex-shrink:0;line-height:1.2;margin-top:1px}
+.hero-text{font-size:13px;color:var(--text2);line-height:1.5}
+.hero-text strong{color:var(--text);font-weight:500}
+
+/* ── WEATHER WIDGET ── */
+.w-widget{
+  margin:10px 14px 0;
+  border-radius:22px;overflow:hidden;
+  position:relative;min-height:160px;
+  background:linear-gradient(145deg,#0a1628,#0d1f3c);
+  border:0.5px solid rgba(56,189,248,0.15);
+}
+.w-widget-bg{position:absolute;inset:0;pointer-events:none}
+.w-glow1{position:absolute;top:-20px;right:20px;width:100px;height:100px;background:radial-gradient(circle,rgba(56,189,248,0.2) 0%,transparent 70%)}
+.w-glow2{position:absolute;bottom:-20px;left:20px;width:80px;height:80px;background:radial-gradient(circle,rgba(124,92,252,0.15) 0%,transparent 70%)}
+.w-content{position:relative;padding:18px 20px 16px}
+.w-top{display:flex;align-items:flex-start;justify-content:space-between}
+.w-left{}
+.w-city{font-size:11px;color:rgba(56,189,248,0.8);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.w-temp-row{display:flex;align-items:flex-end;gap:2px}
+.w-temp{font-family:'Syne',sans-serif;font-size:60px;font-weight:800;line-height:1;letter-spacing:-3px}
+.w-unit{font-size:22px;color:var(--text3);margin-bottom:10px}
+.w-cond{font-size:14px;color:var(--text2);margin-top:4px;display:flex;align-items:center;gap:6px}
+.w-icon-big{font-size:52px;line-height:1}
+.w-pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
+.wp{font-size:11px;font-weight:500;padding:5px 11px;border-radius:20px;display:flex;align-items:center;gap:4px}
+
+/* ── NEWS CARDS ── */
+.ni{padding:13px 16px;border-bottom:0.5px solid var(--border);text-decoration:none;display:block;transition:background .15s}
+.ni:last-child{border-bottom:none}
+.ni:active{background:var(--glass2)}
+.ni-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.ni-hl{font-size:13px;font-weight:500;color:var(--text);line-height:1.45;flex:1}
+.ni-arr{color:var(--text3);font-size:16px;margin-top:2px;flex-shrink:0}
+.ni-src{font-size:10px;font-weight:600;color:var(--text3);margin-top:4px;letter-spacing:.04em;text-transform:uppercase}
+
+/* ── TASKS ── */
+.task-item{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:0.5px solid var(--border);transition:background .15s}
+.task-item:last-child{border-bottom:none}
+.task-item:active{background:var(--glass2)}
+.tchk{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--border2);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:none;transition:all .25s;position:relative}
+.tchk.done{background:var(--green);border-color:var(--green);box-shadow:0 0 12px rgba(52,211,153,0.35)}
+.tchk.done::after{content:'✓';font-size:12px;color:#000;font-weight:800}
+.ttxt{flex:1;font-size:13px;color:var(--text);cursor:pointer}
+.ttxt.done{text-decoration:line-through;color:var(--text3)}
+.tdel{background:none;border:none;cursor:pointer;color:var(--text3);font-size:20px;padding:4px;line-height:1;opacity:.5;transition:opacity .2s}
+.tdel:active{opacity:1;color:var(--red)}
+.addbar{display:flex;align-items:center;gap:10px;padding:13px 16px;border-top:0.5px solid var(--border);background:var(--glass)}
+.addinp{flex:1;background:none;border:none;outline:none;font-size:14px;color:var(--text);font-family:'DM Sans',sans-serif}
+.addinp::placeholder{color:var(--text3)}
+.addbtn{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--purple),#5b50ff);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(124,92,252,0.35)}
+.addbtn svg{width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round}
+.addbtn:active{opacity:.8;transform:scale(.93)}
+
+/* ── QUICK ADD PILLS ── */
+.qpill{font-size:12px;background:var(--glass2);border:0.5px solid var(--border);border-radius:20px;padding:7px 14px;color:var(--text2);cursor:pointer;transition:all .2s;white-space:nowrap}
+.qpill:active{background:var(--bg4);color:var(--text)}
+
+/* ── QUICK ACTIONS ── */
+.qa-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:0 16px 16px}
+.qa{display:flex;flex-direction:column;align-items:center;gap:7px;background:var(--glass2);border:0.5px solid var(--border);border-radius:18px;padding:14px 6px;cursor:pointer;text-decoration:none;transition:all .2s;border:none}
+.qa:active{background:var(--bg4);transform:scale(.95)}
+.qa-icon{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px}
+.qa-lbl{font-size:10px;font-weight:600;color:var(--text2);text-align:center;letter-spacing:.02em}
+
+/* ── MAP ── */
+#map-wrap{height:calc(100dvh - 56px - var(--safe-t) - var(--nav-h) - var(--safe-b));position:relative}
+#leaflet-map{height:100%;width:100%}
+.map-bar{position:absolute;bottom:16px;left:14px;right:14px;z-index:400;background:rgba(6,6,15,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:0.5px solid var(--border2);border-radius:18px;padding:13px 16px;display:flex;align-items:center;gap:12px}
+.map-info{flex:1}
+.map-city{font-family:'Syne',sans-serif;font-size:15px;font-weight:700}
+.map-coords{font-size:11px;color:var(--text3);margin-top:2px}
+.map-open{font-size:12px;font-weight:600;padding:8px 16px;border-radius:20px;border:none;background:linear-gradient(135deg,var(--purple),#5040ff);color:#fff;cursor:pointer;white-space:nowrap}
+.map-open:active{opacity:.85}
+
+/* ── TRIPS ── */
+.trip{margin:10px 14px 0;background:var(--glass);border:0.5px solid var(--border);border-radius:18px;padding:15px 16px;position:relative}
+.trip-type{font-size:28px;margin-bottom:8px}
+.trip-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:3px}
+.trip-meta{font-size:12px;color:var(--text3);line-height:1.5}
+.trip-badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 9px;border-radius:10px;margin-left:8px;letter-spacing:.04em}
+.tb-today{background:var(--amberbg);color:var(--amber)}
+.tb-tmr{background:var(--bluebg);color:var(--blue)}
+.tb-past{background:var(--bg4);color:var(--text3)}
+.tb-upcoming{background:var(--greenbg);color:var(--green)}
+.trip-del{position:absolute;top:14px;right:14px;background:none;border:none;cursor:pointer;color:var(--text3);font-size:20px;opacity:.5}
+.trip-del:active{opacity:1;color:var(--red)}
+/* TRIP FORM */
+.tform{background:var(--glass);border:0.5px solid var(--border);border-radius:22px;margin:10px 14px 0;padding:18px}
+.tform-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:2px}
+.tform-sub{font-size:12px;color:var(--text3);margin-bottom:16px}
+.tflabel{font-size:11px;color:var(--text3);font-weight:600;letter-spacing:.04em;text-transform:uppercase;display:block;margin-bottom:5px;margin-top:14px}
+.tflabel:first-of-type{margin-top:0}
+.tfinput{width:100%;background:var(--bg3);border:0.5px solid var(--border2);border-radius:12px;padding:11px 14px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;-webkit-appearance:none}
+.tfinput:focus{border-color:rgba(124,92,252,0.4)}
+.tfinput::placeholder{color:var(--text3)}
+.tf2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tfsave{width:100%;margin-top:16px;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--purple),#5040ff);color:#fff;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;letter-spacing:-.2px;box-shadow:0 4px 20px rgba(124,92,252,0.3)}
+.tfsave:active{opacity:.85;transform:scale(.98)}
+
+/* ── WEATHER PAGE ── */
+.fc-row{display:flex;align-items:center;padding:11px 0;border-bottom:0.5px solid var(--border)}
+.fc-row:last-child{border-bottom:none}
+.fc-day{width:88px;font-size:13px;font-weight:500}
+.fc-ico{font-size:20px;margin-right:10px}
+.fc-prec{flex:1;font-size:11px;color:var(--text3)}
+.fc-temps{font-size:14px;font-weight:600}
+
+/* ── APPS GRID ── */
+.apps-section{margin:10px 14px 0}
+.apps-section-title{font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;padding:12px 2px 8px}
+.apps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.app-item{display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;text-decoration:none;background:none;border:none;padding:0}
+.app-item:active .app-ico{transform:scale(.9)}
+.app-ico{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;transition:transform .15s;border:0.5px solid var(--border)}
+.app-lbl{font-size:10px;font-weight:500;color:var(--text2);text-align:center}
+
+/* ── SHIMMER ── */
+.shim{height:14px;border-radius:7px;background:var(--bg3);margin-bottom:8px;animation:shim 1.4s infinite}
+@keyframes shim{0%,100%{opacity:.3}50%{opacity:.6}}
+
+/* ── CALENDAR ── */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding:0 16px 16px}
+.cal-dayname{font-size:10px;font-weight:700;color:var(--text3);text-align:center;padding:4px 0;letter-spacing:.04em}
+.cal-day{font-size:13px;font-weight:400;text-align:center;padding:8px 0;border-radius:10px;cursor:pointer;transition:all .2s;color:var(--text2);line-height:1}
+.cal-day:active{background:var(--bg4)}
+.cal-day.today{background:linear-gradient(135deg,var(--purple),#5040ff);color:#fff;font-weight:700;box-shadow:0 2px 12px rgba(124,92,252,0.4)}
+.cal-day.has-trip{position:relative}.cal-day.has-trip::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--amber)}
+.cal-day.other-month{color:var(--text3)}
+.cal-month-nav{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px}
+.cal-month-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700}
+.cal-nav-btn{width:32px;height:32px;border-radius:50%;background:var(--glass2);border:0.5px solid var(--border);cursor:pointer;color:var(--text2);font-size:16px;display:flex;align-items:center;justify-content:center}
+.cal-nav-btn:active{background:var(--bg4)}
+
+/* EMPTY */
+.empty{text-align:center;padding:32px 20px}
+.empty-ico{font-size:40px;opacity:.25;margin-bottom:12px}
+.empty-t{font-size:14px;font-weight:500;color:var(--text2);margin-bottom:4px}
+.empty-s{font-size:12px;color:var(--text3);line-height:1.6}
+.empty-btn{margin-top:16px;display:inline-block;font-size:13px;font-weight:600;color:var(--purple2);background:var(--purplebg);border:none;border-radius:20px;padding:10px 22px;cursor:pointer}
+
+/* MODAL */
+.mo{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.65);backdrop-filter:blur(10px);align-items:flex-end;justify-content:center}
+.mo.open{display:flex}
+.mo-box{background:var(--bg2);border:0.5px solid var(--border2);border-radius:28px 28px 0 0;padding:20px 20px calc(var(--safe-b)+28px);width:100%;max-width:600px}
+.mo-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 18px}
+.mo-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:6px}
+.mo-desc{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:18px}
+.mo-p{width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--purple),#5040ff);color:#fff;font-size:15px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;margin-bottom:10px}
+.mo-s{width:100%;padding:14px;border-radius:14px;border:none;background:var(--bg3);color:var(--text2);font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer}
 </style>
 </head>
 <body>
 <div id="app">
-<div id="header">
-  <div><div id="hdate"></div><div id="hgreet"></div></div>
+
+<!-- HEADER -->
+<div id="hdr">
+  <div class="hdr-left">
+    <div class="hdr-date" id="hdr-date"></div>
+    <div class="hdr-greet" id="hdr-greet"></div>
+    <div class="hdr-loc"><div class="hdr-dot"></div><span id="hdr-loc">Detecting location...</span></div>
+  </div>
   <button id="rbtn" onclick="refreshAll()" aria-label="Refresh">
     <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
   </button>
 </div>
+
 <div id="scroll">
 
-<!-- HOME -->
+<!-- ══ HOME ══════════════════════════════════════════════════════ -->
 <div id="pg-home" class="page active">
-  <div class="today-card">
-    <div class="today-label">Today</div>
-    <div class="today-date" id="today-full"></div>
-    <div class="today-sub">Vilnius, Lithuania</div>
+
+  <!-- Smart summary hero -->
+  <div class="hero">
+    <div class="hero-loc"><span>📍</span><span id="hero-loc">Detecting...</span></div>
+    <div class="hero-greeting" id="hero-greet">Good morning</div>
+    <div class="hero-items" id="hero-items">
+      <div class="hero-item"><div class="hero-icon">🌤</div><div class="hero-text">Loading your briefing...</div></div>
+    </div>
   </div>
+
+  <!-- Weather widget -->
+  <div class="w-widget">
+    <div class="w-widget-bg"><div class="w-glow1"></div><div class="w-glow2"></div></div>
+    <div class="w-content">
+      <div class="w-top">
+        <div class="w-left">
+          <div class="w-city" id="w-city">VILNIUS</div>
+          <div class="w-temp-row">
+            <div class="w-temp" id="w-temp">—</div>
+            <div class="w-unit">°C</div>
+          </div>
+          <div class="w-cond" id="w-cond"><span id="w-cond-text">Loading...</span></div>
+        </div>
+        <div class="w-icon-big" id="w-big-icon">🌡</div>
+      </div>
+      <div class="w-pills" id="w-pills"></div>
+    </div>
+  </div>
+
+  <!-- Quick actions -->
+  <div class="card" style="margin-top:10px">
+    <div class="ch"><div class="ci" style="background:var(--purplebg)">⚡</div><div class="ct">Quick actions</div></div>
+    <div class="qa-grid">
+      <button class="qa" onclick="openApp('whatsapp://','https://web.whatsapp.com')">
+        <div class="qa-icon" style="background:linear-gradient(135deg,#128c7e,#25d366)">💬</div><div class="qa-lbl">WhatsApp</div>
+      </button>
+      <button class="qa" onclick="openMaps()">
+        <div class="qa-icon" style="background:linear-gradient(135deg,#1a73e8,#34a853)">🗺️</div><div class="qa-lbl">Maps</div>
+      </button>
+      <button class="qa" onclick="openApp('calshow://','https://calendar.google.com')">
+        <div class="qa-icon" style="background:linear-gradient(135deg,#4285f4,#34a853)">📅</div><div class="qa-lbl">Calendar</div>
+      </button>
+      <button class="qa" onclick="openApp('message://','https://mail.google.com')">
+        <div class="qa-icon" style="background:linear-gradient(135deg,#ea4335,#fbbc04)">📧</div><div class="qa-lbl">Email</div>
+      </button>
+      <button class="qa" onclick="openApp('tel://','tel://')">
+        <div class="qa-icon" style="background:linear-gradient(135deg,#34c759,#30d158)">📞</div><div class="qa-lbl">Phone</div>
+      </button>
+      <button class="qa" onclick="goPage('weather')">
+        <div class="qa-icon" style="background:linear-gradient(135deg,#007aff,#5ac8fa)">🌤</div><div class="qa-lbl">Weather</div>
+      </button>
+      <button class="qa" onclick="goPage('trips')">
+        <div class="qa-icon" style="background:linear-gradient(135deg,#ff6b35,#f7c59f)">✈️</div><div class="qa-lbl">My Trips</div>
+      </button>
+      <button class="qa" onclick="goPage('news')">
+        <div class="qa-icon" style="background:linear-gradient(135deg,#5856d6,#af52de)">📰</div><div class="qa-lbl">News</div>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tasks preview -->
   <div class="card">
     <div class="ch">
-      <div class="ci" style="background:var(--bluebg)">&#127780;</div>
-      <div class="ct">Weather · Vilnius</div>
-      <span class="badge bg-blue" id="w-live" style="display:none">LIVE</span>
+      <div class="ci" style="background:var(--greenbg)">✅</div>
+      <div class="ct">Tasks</div>
+      <button class="ca" onclick="goPage('tasks')">See all</button>
     </div>
-    <div class="w-hero"><div class="w-temp" id="w-temp">&#8212;</div><div class="w-unit">&#176;C</div></div>
-    <div class="w-cond" id="w-cond"><div class="sh" style="width:160px;margin:0"></div></div>
-    <div class="w-pills" id="w-pills"></div>
+    <div id="home-tasks" class="cb" style="padding-top:0;font-size:13px;color:var(--text3)">No tasks yet</div>
   </div>
+
+  <!-- News mini -->
   <div class="card">
     <div class="ch">
-      <div class="ci" style="background:var(--greenbg)">&#9989;</div>
-      <div class="ct">My Tasks</div>
-      <button onclick="goPage('tasks')" style="font-size:11px;font-weight:500;color:var(--accent2);background:var(--accentbg);border:none;border-radius:20px;padding:5px 12px;cursor:pointer">See all</button>
+      <div class="ci" style="background:var(--pinkbg)">📰</div>
+      <div class="ct" id="home-news-title">Local News</div>
+      <button class="ca" onclick="goPage('news')">More</button>
     </div>
-    <div id="home-tasks" style="padding:0 16px 16px;font-size:13px;color:var(--text3)">No tasks yet</div>
+    <div id="home-news-list"></div>
   </div>
-  <div class="card">
-    <div class="ch"><div class="ci" style="background:rgba(255,255,255,0.05)">&#128279;</div><div class="ct">Quick access</div></div>
-    <div class="lg">
-      <a class="lc" href="https://mail.google.com" target="_blank"><div class="lc-i">&#128231;</div><div class="lc-n">Gmail</div><div class="lc-s">Open inbox</div></a>
-      <a class="lc" href="https://calendar.google.com" target="_blank"><div class="lc-i">&#128197;</div><div class="lc-n">Calendar</div><div class="lc-s">View events</div></a>
-      <a class="lc" href="https://maps.google.com" target="_blank"><div class="lc-i">&#128506;</div><div class="lc-n">Maps</div><div class="lc-s">Navigation</div></a>
-      <a class="lc" href="https://www.google.com/flights" target="_blank"><div class="lc-i">&#9992;</div><div class="lc-n">Flights</div><div class="lc-s">Search trips</div></a>
-      <a class="lc" href="https://outlook.live.com" target="_blank"><div class="lc-i">&#128232;</div><div class="lc-n">Outlook</div><div class="lc-s">Microsoft mail</div></a>
-      <a class="lc" href="https://web.whatsapp.com" target="_blank"><div class="lc-i">&#128172;</div><div class="lc-n">WhatsApp</div><div class="lc-s">Messages</div></a>
-      <a class="lc" href="https://drive.google.com" target="_blank"><div class="lc-i">&#128193;</div><div class="lc-n">Drive</div><div class="lc-s">Your files</div></a>
-      <a class="lc" href="https://www.youtube.com" target="_blank"><div class="lc-i">&#9654;</div><div class="lc-n">YouTube</div><div class="lc-s">Watch</div></a>
-    </div>
-  </div>
-  <div style="height:8px"></div>
+
+  <div style="height:10px"></div>
 </div>
 
-<!-- NEWS -->
-<div id="pg-news" class="page">
-  <div class="dh"><div class="dh-t">News</div><div class="dh-s" id="news-time">Loading...</div></div>
-  <div class="card"><div class="ch"><div class="ci" style="background:var(--redbg)">&#127473;&#127481;</div><div class="ct">Lithuania</div></div><div id="lt-news"><div style="padding:12px 16px"><div class="sh" style="width:90%"></div><div class="sh" style="width:65%"></div><div class="sh" style="width:80%"></div><div class="sh" style="width:50%"></div></div></div></div>
-  <div class="card" style="margin-top:10px"><div class="ch"><div class="ci" style="background:var(--bluebg)">&#127758;</div><div class="ct">World</div></div><div id="world-news"><div style="padding:12px 16px"><div class="sh" style="width:85%"></div><div class="sh" style="width:60%"></div><div class="sh" style="width:75%"></div><div class="sh" style="width:55%"></div></div></div></div>
-  <div class="card" style="margin-top:10px"><div class="ch"><div class="ci" style="background:var(--amberbg)">&#128200;</div><div class="ct">Business &amp; Tech</div></div><div id="biz-news"><div style="padding:12px 16px"><div class="sh" style="width:80%"></div><div class="sh" style="width:60%"></div><div class="sh" style="width:70%"></div></div></div></div>
-  <div style="height:8px"></div>
+<!-- ══ MAP ════════════════════════════════════════════════════════ -->
+<div id="pg-map" class="page">
+  <div id="map-wrap">
+    <div id="leaflet-map"></div>
+    <div class="map-bar">
+      <div class="map-info">
+        <div class="map-city" id="map-city">Your Location</div>
+        <div class="map-coords" id="map-coords">Getting coordinates...</div>
+      </div>
+      <button class="map-open" onclick="openMaps()">Open in Maps</button>
+    </div>
+  </div>
 </div>
 
-<!-- WEATHER -->
+<!-- ══ WEATHER ═══════════════════════════════════════════════════ -->
 <div id="pg-weather" class="page">
-  <div class="dh"><div class="dh-t">Weather</div><div class="dh-s">Vilnius, Lithuania</div></div>
-  <div class="card">
-    <div class="w-hero" style="padding-top:8px"><div class="w-temp" id="w2-temp">&#8212;</div><div class="w-unit">&#176;C</div></div>
-    <div class="w-cond" id="w2-cond" style="font-size:16px;font-weight:500;color:var(--text)"></div>
-    <div class="w-pills" id="w2-pills"></div>
+  <div class="sh"><div class="sh-t">Weather</div><div class="sh-s" id="w-updated"></div></div>
+  <div class="w-widget" style="margin:0 14px">
+    <div class="w-widget-bg"><div class="w-glow1"></div><div class="w-glow2"></div></div>
+    <div class="w-content">
+      <div class="w-top">
+        <div class="w-left">
+          <div class="w-city" id="w2-city">DETECTING...</div>
+          <div class="w-temp-row">
+            <div class="w-temp" id="w2-temp">—</div>
+            <div class="w-unit">°C</div>
+          </div>
+          <div class="w-cond"><span id="w2-cond"></span></div>
+        </div>
+        <div class="w-icon-big" id="w2-icon">🌡</div>
+      </div>
+      <div class="w-pills" id="w2-pills"></div>
+    </div>
   </div>
   <div class="card" style="margin-top:10px">
-    <div class="ch"><div class="ci" style="background:var(--bluebg)">&#128197;</div><div class="ct">7-Day Forecast</div></div>
-    <div id="forecast" style="padding:0 16px 14px"><div class="sh" style="width:100%"></div><div class="sh" style="width:100%"></div><div class="sh" style="width:100%"></div></div>
+    <div class="ch"><div class="ci" style="background:var(--bluebg)">📅</div><div class="ct">7-Day Forecast</div></div>
+    <div id="forecast" style="padding:0 16px 14px"><div class="shim"></div><div class="shim"></div><div class="shim"></div></div>
   </div>
-  <div style="height:8px"></div>
+  <div style="height:10px"></div>
 </div>
 
-<!-- TASKS -->
+<!-- ══ CALENDAR ═══════════════════════════════════════════════════ -->
+<div id="pg-calendar" class="page">
+  <div class="sh"><div class="sh-t">Calendar</div></div>
+  <div class="card">
+    <div class="cal-month-nav">
+      <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
+      <div class="cal-month-title" id="cal-month-title"></div>
+      <button class="cal-nav-btn" onclick="changeMonth(1)">›</button>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+  </div>
+  <!-- Add event -->
+  <div class="tform" style="margin-top:10px">
+    <div class="tform-title">Add to calendar</div>
+    <div class="tform-sub">Events show as dots on the calendar above</div>
+    <label class="tflabel">Event name</label>
+    <input class="tfinput" id="ev-name" placeholder="Meeting, birthday, appointment...">
+    <div class="tf2">
+      <div>
+        <label class="tflabel">Date</label>
+        <input class="tfinput" id="ev-date" type="date">
+      </div>
+      <div>
+        <label class="tflabel">Time</label>
+        <input class="tfinput" id="ev-time" type="time">
+      </div>
+    </div>
+    <button class="tfsave" onclick="addEvent()">Add event</button>
+  </div>
+  <!-- Events list -->
+  <div class="sh" style="padding-top:14px"><div class="sh-t" style="font-size:17px">Upcoming</div></div>
+  <div id="events-list" style="padding:0 14px 0"></div>
+  <div style="height:10px"></div>
+</div>
+
+<!-- ══ TRIPS ══════════════════════════════════════════════════════ -->
+<div id="pg-trips" class="page">
+  <div class="sh"><div class="sh-t">My Trips</div><div class="sh-s">Flights & travel</div></div>
+  <div id="trips-list"></div>
+  <div class="tform">
+    <div class="tform-title">Add a trip</div>
+    <div class="tform-sub">Shows in your home summary automatically</div>
+    <label class="tflabel">Type</label>
+    <select class="tfinput" id="t-type">
+      <option value="flight">✈️ Flight</option>
+      <option value="hotel">🏨 Hotel</option>
+      <option value="event">🎫 Event</option>
+      <option value="trip">🌍 Trip</option>
+    </select>
+    <label class="tflabel">Title</label>
+    <input class="tfinput" id="t-title" placeholder="Flight to Rome, Italy">
+    <div class="tf2">
+      <div><label class="tflabel">Date</label><input class="tfinput" id="t-date" type="date"></div>
+      <div><label class="tflabel">Time</label><input class="tfinput" id="t-time" type="time"></div>
+    </div>
+    <label class="tflabel">Notes (booking ref, gate...)</label>
+    <input class="tfinput" id="t-notes" placeholder="Ref: XY1234, Gate B12">
+    <button class="tfsave" onclick="saveTrip()">Save trip</button>
+  </div>
+  <div style="height:10px"></div>
+</div>
+
+<!-- ══ TASKS ══════════════════════════════════════════════════════ -->
 <div id="pg-tasks" class="page">
-  <div class="dh"><div class="dh-t">Tasks</div><div class="dh-s" id="task-count">0 tasks</div></div>
+  <div class="sh"><div class="sh-t">Tasks</div><div class="sh-s" id="task-count"></div></div>
   <div class="card">
     <div id="task-list"></div>
-    <div class="add-bar">
-      <input class="add-inp" id="task-input" placeholder="Add a task..." maxlength="120">
-      <button class="add-btn" onclick="addTask()" aria-label="Add">
+    <div class="addbar">
+      <input class="addinp" id="task-inp" placeholder="Add a new task...">
+      <button class="addbtn" onclick="addTask()" aria-label="Add">
         <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
     </div>
   </div>
   <div class="card" style="margin-top:10px">
-    <div class="ch"><div class="ci" style="background:var(--amberbg)">&#9889;</div><div class="ct">Quick add</div></div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;padding:0 16px 16px">
-      <button class="qbtn" onclick="quickTask('Buy groceries')">&#128722; Groceries</button>
-      <button class="qbtn" onclick="quickTask('Call doctor')">&#127973; Doctor</button>
-      <button class="qbtn" onclick="quickTask('Pay bills')">&#128179; Bills</button>
-      <button class="qbtn" onclick="quickTask('Gym workout')">&#128170; Gym</button>
-      <button class="qbtn" onclick="quickTask('Read emails')">&#128231; Emails</button>
-      <button class="qbtn" onclick="quickTask('Study')">&#128218; Study</button>
-      <button class="qbtn" onclick="quickTask('Call family')">&#128222; Family</button>
-      <button class="qbtn" onclick="quickTask('Clean house')">&#129529; Clean</button>
+    <div class="ch"><div class="ci" style="background:var(--amberbg)">⚡</div><div class="ct">Quick add</div></div>
+    <div style="display:flex;flex-wrap:wrap;gap:7px;padding:0 16px 16px">
+      <button class="qpill" onclick="quickTask('Buy groceries')">🛒 Groceries</button>
+      <button class="qpill" onclick="quickTask('Call doctor')">🏥 Doctor</button>
+      <button class="qpill" onclick="quickTask('Pay bills')">💳 Bills</button>
+      <button class="qpill" onclick="quickTask('Gym workout')">💪 Gym</button>
+      <button class="qpill" onclick="quickTask('Read emails')">📧 Emails</button>
+      <button class="qpill" onclick="quickTask('Study')">📚 Study</button>
+      <button class="qpill" onclick="quickTask('Call family')">📞 Family</button>
+      <button class="qpill" onclick="quickTask('Clean house')">🧹 Clean</button>
     </div>
   </div>
-  <div style="height:8px"></div>
+  <div style="height:10px"></div>
 </div>
 
-<!-- MORE -->
-<div id="pg-more" class="page">
-  <div class="dh"><div class="dh-t">More apps</div><div class="dh-s">All your services</div></div>
-  <div class="card"><div class="ch"><div class="ci" style="background:var(--redbg)">&#128231;</div><div class="ct">Email</div></div><div class="lg">
-    <a class="lc" href="https://mail.google.com" target="_blank"><div class="lc-i">&#128231;</div><div class="lc-n">Gmail</div><div class="lc-s">Google</div></a>
-    <a class="lc" href="https://outlook.live.com" target="_blank"><div class="lc-i">&#128232;</div><div class="lc-n">Outlook</div><div class="lc-s">Microsoft</div></a>
-  </div></div>
-  <div class="card" style="margin-top:10px"><div class="ch"><div class="ci" style="background:var(--bluebg)">&#128197;</div><div class="ct">Calendar &amp; Tasks</div></div><div class="lg">
-    <a class="lc" href="https://calendar.google.com" target="_blank"><div class="lc-i">&#128197;</div><div class="lc-n">Google Calendar</div><div class="lc-s">Events</div></a>
-    <a class="lc" href="https://todoist.com" target="_blank"><div class="lc-i">&#9989;</div><div class="lc-n">Todoist</div><div class="lc-s">Tasks</div></a>
-    <a class="lc" href="https://notion.so" target="_blank"><div class="lc-i">&#128203;</div><div class="lc-n">Notion</div><div class="lc-s">Notes</div></a>
-    <a class="lc" href="https://trello.com" target="_blank"><div class="lc-i">&#128203;</div><div class="lc-n">Trello</div><div class="lc-s">Boards</div></a>
-  </div></div>
-  <div class="card" style="margin-top:10px"><div class="ch"><div class="ci" style="background:var(--greenbg)">&#9992;</div><div class="ct">Travel</div></div><div class="lg">
-    <a class="lc" href="https://www.google.com/flights" target="_blank"><div class="lc-i">&#9992;</div><div class="lc-n">Google Flights</div><div class="lc-s">Search</div></a>
-    <a class="lc" href="https://www.booking.com" target="_blank"><div class="lc-i">&#127968;</div><div class="lc-n">Booking.com</div><div class="lc-s">Hotels</div></a>
-    <a class="lc" href="https://maps.google.com" target="_blank"><div class="lc-i">&#128506;</div><div class="lc-n">Google Maps</div><div class="lc-s">Navigate</div></a>
-    <a class="lc" href="https://www.airbnb.com" target="_blank"><div class="lc-i">&#127968;</div><div class="lc-n">Airbnb</div><div class="lc-s">Stays</div></a>
-  </div></div>
-  <div class="card" style="margin-top:10px"><div class="ch"><div class="ci" style="background:var(--amberbg)">&#128172;</div><div class="ct">Social &amp; Chat</div></div><div class="lg">
-    <a class="lc" href="https://web.whatsapp.com" target="_blank"><div class="lc-i">&#128172;</div><div class="lc-n">WhatsApp</div><div class="lc-s">Messages</div></a>
-    <a class="lc" href="https://www.instagram.com" target="_blank"><div class="lc-i">&#128248;</div><div class="lc-n">Instagram</div><div class="lc-s">Feed</div></a>
-    <a class="lc" href="https://web.telegram.org" target="_blank"><div class="lc-i">&#9992;</div><div class="lc-n">Telegram</div><div class="lc-s">Chats</div></a>
-    <a class="lc" href="https://twitter.com" target="_blank"><div class="lc-i">&#128140;</div><div class="lc-n">X / Twitter</div><div class="lc-s">Feed</div></a>
-    <a class="lc" href="https://slack.com" target="_blank"><div class="lc-i">&#128188;</div><div class="lc-n">Slack</div><div class="lc-s">Work chat</div></a>
-    <a class="lc" href="https://discord.com/app" target="_blank"><div class="lc-i">&#127918;</div><div class="lc-n">Discord</div><div class="lc-s">Gaming & chat</div></a>
-  </div></div>
-  <div class="card" style="margin-top:10px"><div class="ch"><div class="ci" style="background:var(--accentbg)">&#127925;</div><div class="ct">Entertainment</div></div><div class="lg">
-    <a class="lc" href="https://www.youtube.com" target="_blank"><div class="lc-i">&#9654;</div><div class="lc-n">YouTube</div><div class="lc-s">Videos</div></a>
-    <a class="lc" href="https://open.spotify.com" target="_blank"><div class="lc-i">&#127925;</div><div class="lc-n">Spotify</div><div class="lc-s">Music</div></a>
-    <a class="lc" href="https://www.netflix.com" target="_blank"><div class="lc-i">&#127910;</div><div class="lc-n">Netflix</div><div class="lc-s">Watch</div></a>
-    <a class="lc" href="https://www.twitch.tv" target="_blank"><div class="lc-i">&#127918;</div><div class="lc-n">Twitch</div><div class="lc-s">Live streams</div></a>
-  </div></div>
-  <div style="height:8px"></div>
+<!-- ══ NEWS ═══════════════════════════════════════════════════════ -->
+<div id="pg-news" class="page">
+  <div class="sh"><div class="sh-t">News</div><div class="sh-s" id="news-time"></div></div>
+  <div class="card"><div class="ch"><div class="ci" style="background:var(--redbg)">📍</div><div class="ct" id="news-local-t">Local</div></div><div id="lt-news"><div style="padding:12px 16px"><div class="shim" style="width:90%"></div><div class="shim" style="width:65%"></div><div class="shim" style="width:80%"></div></div></div></div>
+  <div class="card" style="margin-top:10px"><div class="ch"><div class="ci" style="background:var(--bluebg)">🌐</div><div class="ct">World</div></div><div id="world-news"><div style="padding:12px 16px"><div class="shim" style="width:85%"></div><div class="shim" style="width:60%"></div><div class="shim" style="width:75%"></div></div></div></div>
+  <div class="card" style="margin-top:10px"><div class="ch"><div class="ci" style="background:var(--amberbg)">💼</div><div class="ct">Business & Tech</div></div><div id="biz-news"><div style="padding:12px 16px"><div class="shim" style="width:80%"></div><div class="shim" style="width:55%"></div></div></div></div>
+  <div style="height:10px"></div>
 </div>
 
-</div>
-<nav>
+</div><!-- /scroll -->
+
+<!-- NAV -->
+<nav id="nav">
   <button class="nb active" id="nb-home" onclick="goPage('home')">
+    <div class="nb-pip"></div>
     <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
     <span>Home</span>
   </button>
-  <button class="nb" id="nb-news" onclick="goPage('news')">
-    <svg viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z"/><path d="M16 2v20"/><line x1="8" y1="7" x2="12" y2="7"/><line x1="8" y1="12" x2="12" y2="12"/></svg>
-    <span>News</span>
+  <button class="nb" id="nb-map" onclick="goPage('map')">
+    <div class="nb-pip"></div>
+    <svg viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+    <span>Map</span>
   </button>
-  <button class="nb" id="nb-weather" onclick="goPage('weather')">
-    <svg viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
-    <span>Weather</span>
+  <button class="nb" id="nb-calendar" onclick="goPage('calendar')">
+    <div class="nb-pip"></div>
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <span>Calendar</span>
+  </button>
+  <button class="nb" id="nb-trips" onclick="goPage('trips')">
+    <div class="nb-pip"></div>
+    <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.18 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.94-.94a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+    <span>Trips</span>
   </button>
   <button class="nb" id="nb-tasks" onclick="goPage('tasks')">
+    <div class="nb-pip"></div>
     <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
     <span>Tasks</span>
   </button>
-  <button class="nb" id="nb-more" onclick="goPage('more')">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-    <span>More</span>
-  </button>
 </nav>
+
+</div><!-- /app -->
+
+<!-- MODAL -->
+<div class="mo" id="modal" onclick="closeMo(event)">
+  <div class="mo-box" onclick="event.stopPropagation()">
+    <div class="mo-handle"></div>
+    <div class="mo-title" id="mo-title"></div>
+    <div class="mo-desc" id="mo-desc"></div>
+    <button class="mo-p" id="mo-btn1" onclick="moAction()"></button>
+    <button class="mo-s" onclick="closeMo()">Close</button>
+  </div>
 </div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const now=new Date();
+// ── CONSTANTS ────────────────────────────────────────────────────
 const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
-const h=now.getHours();
-document.getElementById('hdate').textContent=DAYS[now.getDay()]+', '+MONTHS[now.getMonth()]+' '+now.getDate();
-document.getElementById('hgreet').textContent=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
-document.getElementById('today-full').textContent=DAYS[now.getDay()]+', '+now.getDate()+' '+MONTHS[now.getMonth()];
+const WMO={0:'Clear sky',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Foggy',48:'Icy fog',51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',71:'Light snow',73:'Snow',75:'Heavy snow',80:'Rain showers',81:'Heavy rain showers',82:'Violent showers',95:'Thunderstorm',99:'Thunderstorm'};
+const WICO={0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',48:'🌫',51:'🌦',53:'🌦',55:'🌧',61:'🌦',63:'🌧',65:'🌧',71:'🌨',73:'❄️',75:'❄️',80:'🌦',81:'🌧',82:'⛈',95:'⛈',99:'⛈'};
 
+// ── STATE ─────────────────────────────────────────────────────────
+let lat=54.6892,lon=25.2798,city='Vilnius',country='Lithuania';
+let mapInst=null,mapMark=null,mapInit=false;
+let weather=null;
+let tasks=JSON.parse(localStorage.getItem('ml_t')||'[]');
+let trips=JSON.parse(localStorage.getItem('ml_tr')||'[]');
+let events=JSON.parse(localStorage.getItem('ml_ev')||'[]');
+let calMonth=new Date().getMonth(),calYear=new Date().getFullYear();
+let moUrl='';
+
+// ── DATE / GREETING ──────────────────────────────────────────────
+const now=new Date();
+const H=now.getHours();
+const greet=H<5?'Good night':H<12?'Good morning':H<17?'Good afternoon':H<21?'Good evening':'Good night';
+document.getElementById('hdr-date').textContent=DAYS[now.getDay()]+' · '+MONTHS[now.getMonth()]+' '+now.getDate()+', '+now.getFullYear();
+document.getElementById('hdr-greet').textContent=greet;
+document.getElementById('hero-greet').textContent=greet+' 👋';
+const todayStr=now.toISOString().split('T')[0];
+document.getElementById('t-date').value=todayStr;
+document.getElementById('ev-date').value=todayStr;
+
+// ── NAVIGATION ───────────────────────────────────────────────────
 function goPage(p){
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.nb').forEach(x=>x.classList.remove('active'));
   document.getElementById('pg-'+p).classList.add('active');
-  document.getElementById('nb-'+p).classList.add('active');
+  const nb=document.getElementById('nb-'+p);
+  if(nb)nb.classList.add('active');
   document.getElementById('scroll').scrollTop=0;
+  if(p==='map'&&!mapInit){initMap();mapInit=true;}
+  if(p==='calendar')renderCal();
 }
 
-const WMO={0:'Clear sky',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Foggy',48:'Icy fog',51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',71:'Light snow',73:'Snow',75:'Heavy snow',80:'Rain showers',81:'Rain showers',82:'Heavy showers',95:'Thunderstorm',96:'Thunderstorm',99:'Thunderstorm'};
-const WICO={0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',48:'🌫',51:'🌦',53:'🌦',55:'🌧',61:'🌦',63:'🌧',65:'🌧',71:'🌨',73:'❄️',75:'❄️',80:'🌦',81:'🌧',82:'⛈',95:'⛈',96:'⛈',99:'⛈'};
+// ── GPS ──────────────────────────────────────────────────────────
+function getLocation(){
+  if(!navigator.geolocation){locFail();return;}
+  navigator.geolocation.getCurrentPosition(
+    p=>{lat=p.coords.latitude;lon=p.coords.longitude;geocode();loadWeather();},
+    _=>locFail(),{timeout:10000,maximumAge:300000}
+  );
+}
+async function geocode(){
+  try{
+    const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+    const d=await r.json();
+    city=d.address.city||d.address.town||d.address.village||d.address.county||'Unknown';
+    country=d.address.country||'';
+    updateLocUI();
+    loadNews();
+  }catch(_){locFail();}
+}
+function locFail(){updateLocUI();loadWeather();loadNews();}
+function updateLocUI(){
+  const s=city+(country?', '+country:'');
+  document.getElementById('hdr-loc').textContent=s;
+  document.getElementById('hero-loc').textContent=s;
+  document.getElementById('w-city').textContent=city.toUpperCase();
+  document.getElementById('w2-city').textContent=city.toUpperCase();
+  document.getElementById('map-city').textContent=s;
+  document.getElementById('map-coords').textContent=lat.toFixed(5)+'°N, '+lon.toFixed(5)+'°E';
+  document.getElementById('news-local-t').textContent='News · '+city;
+  document.getElementById('home-news-title').textContent='News · '+city;
+  if(mapInst&&mapMark){mapInst.setView([lat,lon],14);mapMark.setLatLng([lat,lon]);}
+}
 
+// ── MAP ──────────────────────────────────────────────────────────
+function initMap(){
+  mapInst=L.map('leaflet-map',{zoomControl:false,attributionControl:false}).setView([lat,lon],14);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(mapInst);
+  const ico=L.divIcon({html:'<div style="width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,#7c5cfc,#5040ff);border:3px solid #fff;box-shadow:0 0 0 5px rgba(124,92,252,0.3)"></div>',iconSize:[18,18],iconAnchor:[9,9],className:''});
+  mapMark=L.marker([lat,lon],{icon:ico}).addTo(mapInst);
+  L.control.zoom({position:'topright'}).addTo(mapInst);
+}
+function openMaps(){
+  const url=`maps://?ll=${lat},${lon}&q=${encodeURIComponent(city)}`;
+  window.location.href=url;
+  setTimeout(()=>{window.open(`https://maps.google.com/?q=${lat},${lon}`,'_blank');},1200);
+}
+function openApp(scheme,fallback){
+  window.location.href=scheme;
+  setTimeout(()=>{window.open(fallback,'_blank');},1200);
+}
+
+// ── WEATHER ──────────────────────────────────────────────────────
 async function loadWeather(){
   try{
-    const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=54.6892&longitude=25.2798&current=temperature_2m,weathercode,windspeed_10m,relativehumidity_2m,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,weathercode,precipitation_probability_max&timezone=Europe%2FVilnius&forecast_days=7');
-    const d=await r.json();
+    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weathercode,windspeed_10m,relativehumidity_2m,apparent_temperature,precipitation&daily=temperature_2m_max,temperature_2m_min,weathercode,precipitation_probability_max&timezone=auto&forecast_days=7`);
+    const d=await r.json();weather=d;
     const c=d.current;
     const t=Math.round(c.temperature_2m);
     const f=Math.round(c.apparent_temperature);
-    const cond=WMO[c.weathercode]||'';
-    const ico=WICO[c.weathercode]||'🌡';
-    const wind=Math.round(c.windspeed_10m);
-    const hum=c.relativehumidity_2m;
+    const cd=WMO[c.weathercode]||'Clear';
+    const ic=WICO[c.weathercode]||'🌡';
+    const w=Math.round(c.windspeed_10m);
+    const hu=c.relativehumidity_2m;
+    const pills=`<div class="wp" style="background:var(--bluebg);color:var(--blue)">💨 ${w} km/h</div><div class="wp" style="background:var(--tealbg);color:var(--teal)">💧 ${hu}%</div><div class="wp" style="background:var(--amberbg);color:var(--amber)">🌡 Feels ${f}°C</div>`;
+    // Home
     document.getElementById('w-temp').textContent=t;
-    document.getElementById('w-cond').innerHTML=ico+' '+cond;
-    document.getElementById('w-pills').innerHTML='<div class="wp" style="background:var(--bluebg);color:var(--blue)">Wind '+wind+' km/h</div><div class="wp" style="background:var(--greenbg);color:var(--green)">Humidity '+hum+'%</div><div class="wp" style="background:var(--amberbg);color:var(--amber)">Feels '+f+'°C</div>';
-    document.getElementById('w-live').style.display='';
+    document.getElementById('w-cond-text').textContent=cd;
+    document.getElementById('w-big-icon').textContent=ic;
+    document.getElementById('w-pills').innerHTML=pills;
+    // Weather page
     document.getElementById('w2-temp').textContent=t;
-    document.getElementById('w2-cond').textContent=ico+'  '+cond;
-    document.getElementById('w2-pills').innerHTML='<div class="wp" style="background:var(--bluebg);color:var(--blue)">💨 Wind '+wind+' km/h</div><div class="wp" style="background:var(--greenbg);color:var(--green)">💧 Humidity '+hum+'%</div><div class="wp" style="background:var(--amberbg);color:var(--amber)">🌡 Feels '+f+'°C</div>';
-    const daily=d.daily;
-    let fc='';
-    for(let i=0;i<7;i++){
-      const date=new Date(daily.time[i]);
-      const dn=i===0?'Today':i===1?'Tomorrow':DAYS[date.getDay()];
-      const mx=Math.round(daily.temperature_2m_max[i]);
-      const mn=Math.round(daily.temperature_2m_min[i]);
-      const wi=WICO[daily.weathercode[i]]||'🌡';
-      const prec=daily.precipitation_probability_max[i];
-      fc+='<div style="display:flex;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--border);'+(i===6?'border:none':'')+'"><div style="width:90px;font-size:13px;font-weight:500;color:var(--text)">'+dn+'</div><div style="font-size:18px;margin-right:10px">'+wi+'</div><div style="flex:1;font-size:12px;color:var(--text3)">'+(prec>20?'💧 '+prec+'%':'')+'</div><div style="font-size:13px;font-weight:500;color:var(--text)">'+mx+'° <span style="color:var(--text3)">'+mn+'°</span></div></div>';
-    }
-    document.getElementById('forecast').innerHTML=fc;
-  }catch(e){document.getElementById('w-cond').textContent='Tap refresh to load weather';}
+    document.getElementById('w2-cond').textContent=ic+'  '+cd;
+    document.getElementById('w2-icon').textContent=ic;
+    document.getElementById('w2-pills').innerHTML=pills;
+    document.getElementById('w-updated').textContent='Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    // Forecast
+    const dy=d.daily;
+    document.getElementById('forecast').innerHTML=Array.from({length:7},(_,i)=>{
+      const dt=new Date(dy.time[i]+'T12:00:00');
+      const dn=i===0?'Today':i===1?'Tomorrow':DAYS[dt.getDay()];
+      const mx=Math.round(dy.temperature_2m_max[i]);
+      const mn=Math.round(dy.temperature_2m_min[i]);
+      const wi=WICO[dy.weathercode[i]]||'🌡';
+      const pr=dy.precipitation_probability_max[i];
+      return`<div class="fc-row"><div class="fc-day">${dn}</div><div class="fc-ico">${wi}</div><div class="fc-prec">${pr>20?'💧 '+pr+'%':''}</div><div class="fc-temps">${mx}° <span style="color:var(--text3)">${mn}°</span></div></div>`;
+    }).join('');
+    buildSummary();
+  }catch(_){document.getElementById('w-cond-text').textContent='Tap refresh';}
 }
 
+// ── SUMMARY ───────────────────────────────────────────────────────
+function fmt12(t){if(!t)return'';const[h,m]=t.split(':');const hh=parseInt(h);return(hh%12||12)+':'+m+(hh>=12?'pm':'am');}
+function buildSummary(){
+  const items=[];
+  if(weather){
+    const c=weather.current;
+    const t=Math.round(c.temperature_2m);
+    const cd=WMO[c.weathercode]||'clear';
+    const ic=WICO[c.weathercode]||'🌡';
+    items.push({i:ic,t:`<strong>${t}°C and ${cd.toLowerCase()}</strong> in ${city} right now.`});
+  }
+  const td=now.toISOString().split('T')[0];
+  const tmr=new Date(Date.now()+86400000).toISOString().split('T')[0];
+  [...trips,...events].filter(x=>x.date>=td).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,3).forEach(x=>{
+    const isToday=x.date===td,isTmr=x.date===tmr;
+    const when=isToday?(x.time?'today at '+fmt12(x.time):'today'):isTmr?'tomorrow':'on '+new Date(x.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    const ico={flight:'✈️',hotel:'🏨',event:'🎫',trip:'🌍'}[x.type]||'📌';
+    items.push({i:ico,t:`<strong>${x.name||x.title}</strong> ${when}.${x.notes?' '+x.notes:''}`});
+  });
+  const a=tasks.filter(x=>!x.done);
+  if(a.length)items.push({i:'✅',t:`You have <strong>${a.length} task${a.length!==1?'s':''}</strong> pending.`});
+  else if(tasks.length)items.push({i:'🎉',t:'All tasks complete!'});
+  if(!items.length)items.push({i:'👋',t:`Welcome to MyLife. Add tasks and trips to see your daily summary here.`});
+  document.getElementById('hero-items').innerHTML=items.map(x=>`<div class="hero-item"><div class="hero-icon">${x.i}</div><div class="hero-text">${x.t}</div></div>`).join('');
+}
+
+// ── NEWS ──────────────────────────────────────────────────────────
 async function fetchRSS(url){
-  const proxy='https://api.allorigins.win/get?url='+encodeURIComponent(url);
-  const r=await fetch(proxy);
-  const d=await r.json();
-  return new DOMParser().parseFromString(d.contents,'text/xml');
+  const r=await fetch('https://api.allorigins.win/get?url='+encodeURIComponent(url));
+  return new DOMParser().parseFromString((await r.json()).contents,'text/xml');
 }
-
 function renderNews(items,id,limit){
   const el=document.getElementById(id);
-  if(!items.length){el.innerHTML='<div style="padding:12px 16px;font-size:13px;color:var(--text3)">No news available.</div>';return;}
-  el.innerHTML=items.slice(0,limit||6).map(item=>{
-    const title=(item.querySelector('title')?.textContent||'').replace(/<[^>]*>/g,'');
+  const rows=items.slice(0,limit||6);
+  if(!rows.length){el.innerHTML='<div style="padding:12px 16px;font-size:13px;color:var(--text3)">Nothing loaded.</div>';return;}
+  el.innerHTML=rows.map(item=>{
+    const hl=(item.querySelector('title')?.textContent||'').replace(/<[^>]*>/g,'');
     const link=item.querySelector('link')?.textContent||'#';
     const src=item.querySelector('source')?.textContent||'';
-    return '<a class="ni" href="'+link+'" target="_blank"><div class="ni-hl">'+title.substring(0,120)+'</div>'+(src?'<div class="ni-src">'+src+'</div>':'')+'</a>';
+    return`<a class="ni" href="${link}" target="_blank"><div class="ni-top"><div class="ni-hl">${hl.substring(0,130)}</div><div class="ni-arr">›</div></div>${src?`<div class="ni-src">${src}</div>`:''}</a>`;
   }).join('');
 }
-
 async function loadNews(){
-  document.getElementById('news-time').textContent='Loading...';
+  const q=encodeURIComponent(city+' '+country);
   try{
-    const[lt,world,biz]=await Promise.allSettled([
-      fetchRSS('https://news.google.com/rss/search?q=Lithuania+Vilnius&hl=en-LT&gl=LT&ceid=LT:en'),
+    const[loc,world,biz]=await Promise.allSettled([
+      fetchRSS(`https://news.google.com/rss/search?q=${q}&hl=en&gl=US&ceid=US:en`),
       fetchRSS('https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en'),
-      fetchRSS('https://news.google.com/rss/search?q=business+technology+2026&hl=en&gl=US&ceid=US:en')
+      fetchRSS('https://news.google.com/rss/search?q=business+technology&hl=en&gl=US&ceid=US:en')
     ]);
-    if(lt.status==='fulfilled')renderNews([...lt.value.querySelectorAll('item')],'lt-news',6);
-    else document.getElementById('lt-news').innerHTML='<div style="padding:12px 16px;font-size:13px;color:var(--text3)">Unavailable. Check connection.</div>';
+    if(loc.status==='fulfilled'){const its=[...loc.value.querySelectorAll('item')];renderNews(its,'lt-news',6);renderNews(its,'home-news-list',3);}
     if(world.status==='fulfilled')renderNews([...world.value.querySelectorAll('item')],'world-news',6);
-    else document.getElementById('world-news').innerHTML='<div style="padding:12px 16px;font-size:13px;color:var(--text3)">Unavailable.</div>';
     if(biz.status==='fulfilled')renderNews([...biz.value.querySelectorAll('item')],'biz-news',4);
-    else document.getElementById('biz-news').innerHTML='<div style="padding:12px 16px;font-size:13px;color:var(--text3)">Unavailable.</div>';
     document.getElementById('news-time').textContent='Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-  }catch(e){document.getElementById('news-time').textContent='Could not load news';}
+  }catch(_){}
 }
 
-let tasks=JSON.parse(localStorage.getItem('ml_tasks')||'[]');
-function saveTasks(){localStorage.setItem('ml_tasks',JSON.stringify(tasks));}
+// ── CALENDAR ─────────────────────────────────────────────────────
+function renderCal(){
+  const MNAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('cal-month-title').textContent=MNAMES[calMonth]+' '+calYear;
+  const first=new Date(calYear,calMonth,1).getDay();
+  const days=new Date(calYear,calMonth+1,0).getDate();
+  const prevDays=new Date(calYear,calMonth,0).getDate();
+  const todayN=now.getDate(),todayM=now.getMonth(),todayY=now.getFullYear();
+  const tripDates=new Set([...trips,...events].map(x=>x.date));
+  let html='';
+  ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(d=>{html+=`<div class="cal-dayname">${d}</div>`;});
+  for(let i=0;i<first;i++){html+=`<div class="cal-day other-month">${prevDays-first+1+i}</div>`;}
+  for(let d=1;d<=days;d++){
+    const ds=calYear+'-'+(String(calMonth+1).padStart(2,'0'))+'-'+(String(d).padStart(2,'0'));
+    const isT=d===todayN&&calMonth===todayM&&calYear===todayY;
+    const hasTr=tripDates.has(ds);
+    html+=`<div class="cal-day${isT?' today':''}${hasTr?' has-trip':''}">${d}</div>`;
+  }
+  const rem=(7-(first+days)%7)%7;
+  for(let i=1;i<=rem;i++){html+=`<div class="cal-day other-month">${i}</div>`;}
+  document.getElementById('cal-grid').innerHTML=html;
+  // Events list
+  const upcoming=[...trips,...events].filter(x=>x.date>=todayStr).sort((a,b)=>a.date.localeCompare(b.date));
+  const evEl=document.getElementById('events-list');
+  if(!upcoming.length){evEl.innerHTML='<div class="empty"><div class="empty-ico">📅</div><div class="empty-t">No upcoming events</div><div class="empty-s">Add trips or events and they appear here</div></div>';return;}
+  evEl.innerHTML=upcoming.slice(0,8).map(x=>{
+    const dt=new Date(x.date+'T12:00:00');
+    const ico={flight:'✈️',hotel:'🏨',event:'🎫',trip:'🌍'}[x.type]||'📌';
+    return`<div class="trip" style="margin:0 0 8px"><button class="trip-del" onclick="deleteEvent('${x.id}')">×</button><div class="trip-type">${ico}</div><div class="trip-title">${x.name||x.title}</div><div class="trip-meta">${dt.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}${x.time?' · '+fmt12(x.time):''}${x.notes?' · '+x.notes:''}</div></div>`;
+  }).join('');
+}
+function changeMonth(d){calMonth+=d;if(calMonth>11){calMonth=0;calYear++;}else if(calMonth<0){calMonth=11;calYear--;}renderCal();}
+function addEvent(){
+  const n=document.getElementById('ev-name').value.trim();
+  const dt=document.getElementById('ev-date').value;
+  if(!n||!dt){alert('Enter name and date');return;}
+  events.push({id:'e'+Date.now(),name:n,date:dt,time:document.getElementById('ev-time').value,type:'event'});
+  localStorage.setItem('ml_ev',JSON.stringify(events));
+  document.getElementById('ev-name').value='';
+  renderCal();buildSummary();
+}
+function deleteEvent(id){
+  trips=trips.filter(x=>String(x.id)!==id);events=events.filter(x=>x.id!==id);
+  localStorage.setItem('ml_tr',JSON.stringify(trips));
+  localStorage.setItem('ml_ev',JSON.stringify(events));
+  renderCal();renderTrips();buildSummary();
+}
+
+// ── TRIPS ─────────────────────────────────────────────────────────
+function saveTrip(){
+  const tt=document.getElementById('t-title').value.trim();
+  const dt=document.getElementById('t-date').value;
+  if(!tt||!dt){alert('Enter title and date');return;}
+  trips.push({id:Date.now(),type:document.getElementById('t-type').value,title:tt,date:dt,time:document.getElementById('t-time').value,notes:document.getElementById('t-notes').value.trim()});
+  trips.sort((a,b)=>a.date.localeCompare(b.date));
+  localStorage.setItem('ml_tr',JSON.stringify(trips));
+  document.getElementById('t-title').value='';document.getElementById('t-time').value='';document.getElementById('t-notes').value='';
+  renderTrips();buildSummary();
+}
+function renderTrips(){
+  const el=document.getElementById('trips-list');
+  if(!trips.length){el.innerHTML='<div class="empty"><div class="empty-ico">✈️</div><div class="empty-t">No trips yet</div><div class="empty-s">Add a flight, hotel, or event and it appears in your daily summary automatically</div></div>';return;}
+  const td=now.toISOString().split('T')[0];
+  const tmr=new Date(Date.now()+86400000).toISOString().split('T')[0];
+  el.innerHTML=trips.map(x=>{
+    const dt=new Date(x.date+'T12:00:00');
+    const isT=x.date===td,isPast=x.date<td,isTmr=x.date===tmr;
+    const badge=isT?'<span class="trip-badge tb-today">TODAY</span>':isTmr?'<span class="trip-badge tb-tmr">TOMORROW</span>':isPast?'<span class="trip-badge tb-past">PAST</span>':'<span class="trip-badge tb-upcoming">'+dt.toLocaleDateString('en-US',{month:'short',day:'numeric'})+'</span>';
+    const ico={flight:'✈️',hotel:'🏨',event:'🎫',trip:'🌍'}[x.type]||'📌';
+    return`<div class="trip" style="${isPast?'opacity:.5':''}"><button class="trip-del" onclick="deleteTrip(${x.id})" aria-label="Delete">×</button><div class="trip-type">${ico}</div><div class="trip-title">${x.title} ${badge}</div><div class="trip-meta">${dt.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}${x.time?' · '+fmt12(x.time):''}${x.notes?' · '+x.notes:''}</div></div>`;
+  }).join('');
+}
+function deleteTrip(id){trips=trips.filter(x=>x.id!==id);localStorage.setItem('ml_tr',JSON.stringify(trips));renderTrips();buildSummary();}
+
+// ── TASKS ─────────────────────────────────────────────────────────
+function saveT(){localStorage.setItem('ml_t',JSON.stringify(tasks));}
 function renderTasks(){
-  const active=tasks.filter(t=>!t.done);
-  document.getElementById('task-count').textContent=active.length+' task'+(active.length!==1?'s':'')+' remaining';
-  const list=document.getElementById('task-list');
-  if(!tasks.length){list.innerHTML='<div style="text-align:center;padding:28px 20px"><div style="font-size:36px;opacity:.3;margin-bottom:10px">✅</div><div style="font-size:13px;color:var(--text2)">No tasks yet</div><div style="font-size:12px;color:var(--text3);margin-top:4px">Add something below</div></div>';}
-  else{list.innerHTML=tasks.map((t,i)=>'<div class="task-item"><button class="task-check '+(t.done?'done':'')+'" onclick="toggle('+i+')" aria-label="Toggle"></button><div class="task-text '+(t.done?'done':'')+'" onclick="toggle('+i+')" style="cursor:pointer">'+t.text+'</div><button class="task-del" onclick="del('+i+')" aria-label="Delete">&times;</button></div>').join('');}
+  const a=tasks.filter(x=>!x.done);
+  document.getElementById('task-count').textContent=a.length+' task'+(a.length!==1?'s':'')+' remaining';
+  const el=document.getElementById('task-list');
+  if(!tasks.length){el.innerHTML='<div class="empty"><div class="empty-ico">✅</div><div class="empty-t">No tasks yet</div><div class="empty-s">Type below to add your first task</div></div>';}
+  else el.innerHTML=tasks.map((t,i)=>`<div class="task-item"><button class="tchk ${t.done?'done':''}" onclick="tog(${i})" aria-label="Toggle"></button><div class="ttxt ${t.done?'done':''}" onclick="tog(${i})">${t.text}</div><button class="tdel" onclick="del(${i})" aria-label="Delete">&times;</button></div>`).join('');
   const home=document.getElementById('home-tasks');
-  const show=active.slice(0,3);
-  if(!show.length)home.innerHTML='<div style="color:var(--green);font-size:13px">All done! ✓</div>';
-  else home.innerHTML=show.map(t=>'<div style="margin-bottom:6px;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2)"><div style="width:7px;height:7px;border-radius:50%;background:var(--accent2);flex-shrink:0"></div>'+t.text+'</div>').join('')+(active.length>3?'<div style="font-size:11px;color:var(--text3);margin-top:2px">+'+( active.length-3)+' more</div>':'');
+  const show=a.slice(0,3);
+  if(!show.length)home.innerHTML=tasks.length?'<div style="color:var(--green);font-size:13px;padding-top:4px">All done! 🎉</div>':'<div style="font-size:13px;color:var(--text3)">No tasks yet — tap Tasks to add some</div>';
+  else home.innerHTML=show.map(t=>`<div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;font-size:13px;color:var(--text2)"><div style="width:7px;height:7px;border-radius:50%;background:var(--purple2);flex-shrink:0"></div>${t.text}</div>`).join('')+(a.length>3?`<div style="font-size:11px;color:var(--text3)">+${a.length-3} more</div>`:'');
 }
-function addTask(){const inp=document.getElementById('task-input');const v=inp.value.trim();if(!v)return;tasks.unshift({text:v,done:false});saveTasks();renderTasks();inp.value='';}
-function quickTask(t){tasks.unshift({text:t,done:false});saveTasks();renderTasks();goPage('tasks');}
-function toggle(i){tasks[i].done=!tasks[i].done;saveTasks();renderTasks();}
-function del(i){tasks.splice(i,1);saveTasks();renderTasks();}
-document.addEventListener('DOMContentLoaded',()=>{document.getElementById('task-input').addEventListener('keydown',e=>{if(e.key==='Enter')addTask();});});
+function addTask(){const inp=document.getElementById('task-inp');const v=inp.value.trim();if(!v)return;tasks.unshift({text:v,done:false});saveT();renderTasks();buildSummary();inp.value='';}
+function quickTask(t){tasks.unshift({text:t,done:false});saveT();renderTasks();goPage('tasks');}
+function tog(i){tasks[i].done=!tasks[i].done;saveT();renderTasks();buildSummary();}
+function del(i){tasks.splice(i,1);saveT();renderTasks();buildSummary();}
 
+// ── MODAL ─────────────────────────────────────────────────────────
+function closeMo(e){if(!e||e.target===document.getElementById('modal'))document.getElementById('modal').classList.remove('open');}
+function moAction(){window.location.href=moUrl;closeMo();}
+
+// ── REFRESH ──────────────────────────────────────────────────────
 async function refreshAll(){
   const btn=document.getElementById('rbtn');
-  btn.querySelector('svg').classList.add('spin');btn.disabled=true;
+  btn.querySelector('svg').classList.add('rspin');btn.disabled=true;
+  getLocation();
   await Promise.allSettled([loadWeather(),loadNews()]);
-  btn.querySelector('svg').classList.remove('spin');btn.disabled=false;
+  btn.querySelector('svg').classList.remove('rspin');btn.disabled=false;
 }
 
-renderTasks();
-loadWeather();
-loadNews();
+// ── KEYBOARD ─────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('task-inp').addEventListener('keydown',e=>{if(e.key==='Enter')addTask();});
+});
+
+// ── INIT ─────────────────────────────────────────────────────────
+renderTasks();renderTrips();buildSummary();
+getLocation();
 </script>
 </body>
 </html>
