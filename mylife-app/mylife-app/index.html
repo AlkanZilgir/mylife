@@ -6,852 +6,885 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MyLife">
-<meta name="theme-color" content="#06060f">
+<meta name="theme-color" content="#080b14">
 <title>MyLife</title>
-<link rel="manifest" href="data:application/json,%7B%22name%22%3A%22MyLife%22%2C%22short_name%22%3A%22MyLife%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%2306060f%22%2C%22theme_color%22%3A%22%2306060f%22%7D">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="manifest" href="data:application/json,%7B%22name%22%3A%22MyLife%22%2C%22short_name%22%3A%22MyLife%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23080b14%22%2C%22theme_color%22%3A%22%23080b14%22%7D">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
-:root{
-  --bg:#06060f; --bg2:#0d0d1f; --bg3:#141428; --bg4:#1c1c38;
-  --glass:rgba(255,255,255,0.04); --glass2:rgba(255,255,255,0.07);
-  --border:rgba(255,255,255,0.06); --border2:rgba(255,255,255,0.12);
-  --text:#f0f0ff; --text2:#8888aa; --text3:#44445a;
-  --purple:#7c5cfc; --purple2:#a78bfa; --purplebg:rgba(124,92,252,0.12);
-  --blue:#38bdf8; --bluebg:rgba(56,189,248,0.10);
-  --teal:#2dd4bf; --tealbg:rgba(45,212,191,0.10);
-  --green:#34d399; --greenbg:rgba(52,211,153,0.10);
-  --amber:#fbbf24; --amberbg:rgba(251,191,36,0.10);
-  --red:#f87171; --redbg:rgba(248,113,113,0.10);
-  --pink:#f472b6; --pinkbg:rgba(244,114,182,0.10);
-  --safe-b:env(safe-area-inset-bottom,0px);
-  --safe-t:env(safe-area-inset-top,0px);
-  --nav-h:72px;
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+:root {
+  --bg: #080b14;
+  --s1: #0c1020;
+  --s2: #111528;
+  --s3: #181e38;
+  --line: rgba(255,255,255,0.06);
+  --line2: rgba(255,255,255,0.11);
+  --t1: #ececf4;
+  --t2: #8b8b9e;
+  --t3: #3d3d55;
+  --ind: #5b5bd6;
+  --ind2: #7c7ce8;
+  --ind3: #a5a5f5;
+  --grn: #22c55e;
+  --blue: #38bdf8;
+  --amb: #f59e0b;
+  --rose: #f43f5e;
+  --teal: #14b8a6;
+  --st: env(safe-area-inset-top, 0px);
+  --sb: env(safe-area-inset-bottom, 0px);
 }
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased}
+html, body { height:100%; background:var(--bg); color:var(--t1); font-family:'Inter',sans-serif; overflow:hidden; -webkit-font-smoothing:antialiased; }
+::-webkit-scrollbar { display:none; }
 
-/* SCROLLBAR */
-::-webkit-scrollbar{display:none}
+/* SHELL */
+#shell { position:fixed; inset:0; display:flex; flex-direction:column; }
 
-/* APP */
-#app{display:flex;flex-direction:column;height:100%;height:100dvh;background:var(--bg)}
-
-/* HEADER */
-#hdr{
-  padding:calc(var(--safe-t)+16px) 20px 14px;
-  background:rgba(6,6,15,0.8);
-  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
-  border-bottom:0.5px solid var(--border);
-  flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
-  position:sticky;top:0;z-index:50;
+/* TOPBAR */
+#topbar {
+  flex-shrink:0;
+  padding: calc(var(--st) + 14px) 20px 12px;
+  background: rgba(8,11,20,0.9);
+  backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+  border-bottom: 0.5px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between; gap:12px;
+  z-index: 200;
 }
-.hdr-left{display:flex;flex-direction:column;gap:2px}
-.hdr-date{font-size:11px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;font-weight:500}
-.hdr-greet{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;letter-spacing:-.3px}
-.hdr-loc{font-size:11px;color:var(--purple2);display:flex;align-items:center;gap:4px;margin-top:1px}
-.hdr-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.85)}}
-#rbtn{width:38px;height:38px;border-radius:50%;background:var(--glass2);border:0.5px solid var(--border2);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
-#rbtn:active{background:var(--bg4);transform:scale(.92)}
-#rbtn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
-.rspin{animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* SCROLL */
-#scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:calc(var(--nav-h) + var(--safe-b) + 12px)}
-
-/* NAV */
-#nav{
-  position:fixed;bottom:0;left:0;right:0;z-index:100;
-  background:rgba(6,6,15,0.85);
-  backdrop-filter:blur(32px);-webkit-backdrop-filter:blur(32px);
-  border-top:0.5px solid var(--border);
-  height:calc(var(--nav-h) + var(--safe-b));
-  padding-bottom:var(--safe-b);
-  display:flex;align-items:flex-start;padding-top:8px;
-}
-.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;background:none;border:none;cursor:pointer;padding:6px 4px;color:var(--text3);transition:color .25s;position:relative}
-.nb svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:all .25s}
-.nb span{font-size:10px;font-weight:500;font-family:'DM Sans',sans-serif;letter-spacing:.02em}
-.nb.active{color:var(--purple2)}
-.nb.active svg{stroke:var(--purple2)}
-.nb-pip{position:absolute;top:4px;right:calc(50% - 14px);width:5px;height:5px;border-radius:50%;background:var(--purple);display:none}
-.nb.active .nb-pip{display:block}
+.logo-mark { display:flex; align-items:center; gap:9px; flex-shrink:0; }
+.logo-svg { display:block; }
+.logo-word { font-family:'Syne',sans-serif; font-size:17px; font-weight:800; letter-spacing:-.4px; background:linear-gradient(135deg,#ececf4,#a5a5f5); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.topbar-center { flex:1; text-align:center; }
+.tb-date { font-size:10px; font-weight:600; color:var(--t3); letter-spacing:.09em; text-transform:uppercase; }
+.tb-greet { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; color:var(--t1); margin-top:1px; }
+.topbar-right { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.loc-chip { display:flex; align-items:center; gap:5px; background:var(--s2); border:.5px solid var(--line2); border-radius:20px; padding:5px 10px 5px 7px; }
+.loc-dot { width:6px; height:6px; border-radius:50%; background:var(--grn); box-shadow:0 0 0 0 rgba(34,197,94,.5); animation:locpulse 2.5s infinite; flex-shrink:0; }
+@keyframes locpulse { 0%{box-shadow:0 0 0 0 rgba(34,197,94,.5)} 70%{box-shadow:0 0 0 6px rgba(34,197,94,0)} 100%{box-shadow:0 0 0 0 rgba(34,197,94,0)} }
+.loc-text { font-size:11px; font-weight:500; color:var(--ind3); max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.icon-btn { width:34px; height:34px; border-radius:50%; background:var(--s2); border:.5px solid var(--line2); color:var(--t2); cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.icon-btn:active { opacity:.6; }
+.icon-btn svg { width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+.rspin { animation:spin .8s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg)} }
 
 /* PAGES */
-.page{display:none;animation:fadein .25s ease}.page.active{display:block}
-@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+#pages { flex:1; position:relative; overflow:hidden; }
+.pg { position:absolute; inset:0; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; display:none; }
+.pg::-webkit-scrollbar { display:none; }
+.pg.on { display:block; animation:pgin .2s ease; }
+@keyframes pgin { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+.pg-pad { padding-bottom: calc(var(--sb) + 76px); }
 
-/* ── CARDS ── */
-.card{margin:10px 14px 0;background:var(--glass);border:0.5px solid var(--border);border-radius:22px;overflow:hidden;backdrop-filter:blur(12px)}
-.card-glow{box-shadow:0 0 40px rgba(124,92,252,0.08)}
-.ch{display:flex;align-items:center;gap:10px;padding:14px 16px 8px}
-.ci{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
-.ct{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;flex:1;letter-spacing:-.2px}
-.ca{font-size:11px;font-weight:600;color:var(--purple2);background:var(--purplebg);border:none;border-radius:20px;padding:5px 12px;cursor:pointer;white-space:nowrap}
-.ca:active{opacity:.7}
-.cb{padding:0 16px 16px}
-
-/* ── SECTION HEADING ── */
-.sh{padding:20px 18px 8px;display:flex;align-items:flex-end;justify-content:space-between}
-.sh-t{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.5px}
-.sh-s{font-size:12px;color:var(--text3)}
-
-/* ── HERO SUMMARY ── */
-.hero{
-  margin:14px 14px 0;
-  background:linear-gradient(135deg,#0d0a2a 0%,#110d32 40%,#0a1530 100%);
-  border:0.5px solid rgba(124,92,252,0.2);
-  border-radius:24px;padding:20px;
-  position:relative;overflow:hidden;
+/* NAV */
+#nav {
+  flex-shrink:0;
+  height: calc(var(--sb) + 62px);
+  padding: 8px 0 var(--sb);
+  background: rgba(8,11,20,.92);
+  backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+  border-top: 0.5px solid var(--line);
+  display:flex; z-index:200;
 }
-.hero::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;background:radial-gradient(circle,rgba(124,92,252,0.15) 0%,transparent 70%);pointer-events:none}
-.hero::after{content:'';position:absolute;bottom:-30px;left:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(56,189,248,0.08) 0%,transparent 70%);pointer-events:none}
-.hero-loc{font-size:11px;color:var(--purple2);font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:5px}
-.hero-greeting{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;letter-spacing:-.5px;margin-bottom:14px;line-height:1.15}
-.hero-items{display:flex;flex-direction:column;gap:8px}
-.hero-item{display:flex;align-items:flex-start;gap:10px;background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.07);border-radius:14px;padding:11px 13px}
-.hero-icon{font-size:18px;flex-shrink:0;line-height:1.2;margin-top:1px}
-.hero-text{font-size:13px;color:var(--text2);line-height:1.5}
-.hero-text strong{color:var(--text);font-weight:500}
+.nb { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; background:none; border:none; cursor:pointer; color:var(--t3); transition:color .2s; }
+.nb svg { width:21px; height:21px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; transition:stroke .2s; }
+.nb span { font-size:10px; font-weight:600; letter-spacing:.03em; }
+.nb.on { color:var(--ind3); }
 
-/* ── WEATHER WIDGET ── */
-.w-widget{
-  margin:10px 14px 0;
-  border-radius:22px;overflow:hidden;
-  position:relative;min-height:160px;
-  background:linear-gradient(145deg,#0a1628,#0d1f3c);
-  border:0.5px solid rgba(56,189,248,0.15);
-}
-.w-widget-bg{position:absolute;inset:0;pointer-events:none}
-.w-glow1{position:absolute;top:-20px;right:20px;width:100px;height:100px;background:radial-gradient(circle,rgba(56,189,248,0.2) 0%,transparent 70%)}
-.w-glow2{position:absolute;bottom:-20px;left:20px;width:80px;height:80px;background:radial-gradient(circle,rgba(124,92,252,0.15) 0%,transparent 70%)}
-.w-content{position:relative;padding:18px 20px 16px}
-.w-top{display:flex;align-items:flex-start;justify-content:space-between}
-.w-left{}
-.w-city{font-size:11px;color:rgba(56,189,248,0.8);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
-.w-temp-row{display:flex;align-items:flex-end;gap:2px}
-.w-temp{font-family:'Syne',sans-serif;font-size:60px;font-weight:800;line-height:1;letter-spacing:-3px}
-.w-unit{font-size:22px;color:var(--text3);margin-bottom:10px}
-.w-cond{font-size:14px;color:var(--text2);margin-top:4px;display:flex;align-items:center;gap:6px}
-.w-icon-big{font-size:52px;line-height:1}
-.w-pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
-.wp{font-size:11px;font-weight:500;padding:5px 11px;border-radius:20px;display:flex;align-items:center;gap:4px}
+/* ── SECTION PRIMITIVES ── */
+.s-divider { height:.5px; background:var(--line); margin:0 20px; }
+.s-head { padding:24px 20px 0; }
+.s-label { font-size:10px; font-weight:700; color:var(--t3); letter-spacing:.1em; text-transform:uppercase; margin-bottom:14px; display:flex; align-items:center; justify-content:space-between; }
+.s-label-act { font-size:11px; font-weight:600; color:var(--ind2); background:none; border:none; cursor:pointer; letter-spacing:.04em; }
+.s-label-act:active { opacity:.6; }
 
-/* ── NEWS CARDS ── */
-.ni{padding:13px 16px;border-bottom:0.5px solid var(--border);text-decoration:none;display:block;transition:background .15s}
-.ni:last-child{border-bottom:none}
-.ni:active{background:var(--glass2)}
-.ni-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
-.ni-hl{font-size:13px;font-weight:500;color:var(--text);line-height:1.45;flex:1}
-.ni-arr{color:var(--text3);font-size:16px;margin-top:2px;flex-shrink:0}
-.ni-src{font-size:10px;font-weight:600;color:var(--text3);margin-top:4px;letter-spacing:.04em;text-transform:uppercase}
+/* ── AI BRIEF ── */
+.ai-section { padding:24px 20px 0; }
+.ai-badge { display:inline-flex; align-items:center; gap:6px; font-size:10px; font-weight:700; color:var(--ind3); letter-spacing:.09em; text-transform:uppercase; margin-bottom:14px; }
+.ai-badge-dot { width:5px; height:5px; border-radius:50%; background:var(--ind3); animation:locpulse 1.8s infinite; }
+.ai-text { font-size:15px; line-height:1.85; color:var(--t2); font-weight:300; }
+.ai-text strong { color:var(--t1); font-weight:500; }
+.ai-footer { display:flex; align-items:center; justify-content:space-between; margin-top:14px; }
+.ai-ts { font-size:11px; color:var(--t3); }
+.ai-regen { font-size:11px; font-weight:600; color:var(--ind2); background:none; border:none; cursor:pointer; }
+.ai-regen:disabled { opacity:.4; }
+.shim { height:13px; border-radius:6px; background:var(--s2); animation:sh 1.4s infinite; margin-bottom:8px; }
+.shim.w90{width:90%} .shim.w75{width:75%} .shim.w60{width:60%}
+@keyframes sh { 0%,100%{opacity:.3} 50%{opacity:.7} }
 
-/* ── TASKS ── */
-.task-item{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:0.5px solid var(--border);transition:background .15s}
-.task-item:last-child{border-bottom:none}
-.task-item:active{background:var(--glass2)}
-.tchk{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--border2);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:none;transition:all .25s;position:relative}
-.tchk.done{background:var(--green);border-color:var(--green);box-shadow:0 0 12px rgba(52,211,153,0.35)}
-.tchk.done::after{content:'✓';font-size:12px;color:#000;font-weight:800}
-.ttxt{flex:1;font-size:13px;color:var(--text);cursor:pointer}
-.ttxt.done{text-decoration:line-through;color:var(--text3)}
-.tdel{background:none;border:none;cursor:pointer;color:var(--text3);font-size:20px;padding:4px;line-height:1;opacity:.5;transition:opacity .2s}
-.tdel:active{opacity:1;color:var(--red)}
-.addbar{display:flex;align-items:center;gap:10px;padding:13px 16px;border-top:0.5px solid var(--border);background:var(--glass)}
-.addinp{flex:1;background:none;border:none;outline:none;font-size:14px;color:var(--text);font-family:'DM Sans',sans-serif}
-.addinp::placeholder{color:var(--text3)}
-.addbtn{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--purple),#5b50ff);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(124,92,252,0.35)}
-.addbtn svg{width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round}
-.addbtn:active{opacity:.8;transform:scale(.93)}
+/* ── WEATHER ── */
+.wx-section { padding:28px 20px 0; }
+.wx-city { font-size:11px; font-weight:700; color:var(--blue); letter-spacing:.09em; text-transform:uppercase; margin-bottom:6px; }
+.wx-main { display:flex; align-items:flex-end; justify-content:space-between; }
+.wx-temp-row { display:flex; align-items:flex-start; }
+.wx-num { font-family:'Syne',sans-serif; font-size:84px; font-weight:800; line-height:.9; letter-spacing:-7px; color:#fff; }
+.wx-deg { font-size:32px; color:var(--t3); margin-top:8px; letter-spacing:0; }
+.wx-emoji { font-size:72px; line-height:1; filter:drop-shadow(0 8px 28px rgba(56,189,248,.2)); }
+.wx-cond { font-size:16px; color:var(--t2); margin-top:10px; font-weight:400; }
+.wx-pills { display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; }
+.wxp { font-size:12px; font-weight:500; padding:6px 13px; border-radius:20px; display:inline-flex; align-items:center; gap:5px; }
+.wx-strip { display:flex; overflow-x:auto; margin-top:20px; gap:0; }
+.wx-strip::-webkit-scrollbar { display:none; }
+.wfd { display:flex; flex-direction:column; align-items:center; gap:6px; min-width:60px; flex-shrink:0; padding:10px 4px; border-radius:14px; }
+.wfd.tod { background:rgba(56,189,248,.08); outline:.5px solid rgba(56,189,248,.18); }
+.wfd-d { font-size:10px; font-weight:700; color:var(--t3); letter-spacing:.05em; }
+.wfd-i { font-size:22px; }
+.wfd-h { font-size:13px; font-weight:600; }
+.wfd-l { font-size:11px; color:var(--t3); }
 
-/* ── QUICK ADD PILLS ── */
-.qpill{font-size:12px;background:var(--glass2);border:0.5px solid var(--border);border-radius:20px;padding:7px 14px;color:var(--text2);cursor:pointer;transition:all .2s;white-space:nowrap}
-.qpill:active{background:var(--bg4);color:var(--text)}
+/* ── STAT ROW ── */
+.stat-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; padding:20px 20px 0; }
+.stat-card { background:var(--s1); border:.5px solid var(--line2); border-radius:18px; padding:16px 14px; }
+.stat-val { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; letter-spacing:-.5px; line-height:1; }
+.stat-lbl { font-size:10px; font-weight:600; color:var(--t3); letter-spacing:.06em; text-transform:uppercase; margin-top:6px; }
+.stat-ico { font-size:20px; margin-bottom:8px; }
 
-/* ── QUICK ACTIONS ── */
-.qa-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:0 16px 16px}
-.qa{display:flex;flex-direction:column;align-items:center;gap:7px;background:var(--glass2);border:0.5px solid var(--border);border-radius:18px;padding:14px 6px;cursor:pointer;text-decoration:none;transition:all .2s;border:none}
-.qa:active{background:var(--bg4);transform:scale(.95)}
-.qa-icon{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px}
-.qa-lbl{font-size:10px;font-weight:600;color:var(--text2);text-align:center;letter-spacing:.02em}
+/* ── GITHUB ── */
+.gh-section { padding:28px 20px 0; }
+.gh-header { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+.gh-avatar { width:36px; height:36px; border-radius:50%; background:var(--s2); border:.5px solid var(--line2); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; overflow:hidden; }
+.gh-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.gh-name { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; }
+.gh-sub { font-size:12px; color:var(--t3); margin-top:1px; }
+.gh-commit-list { display:flex; flex-direction:column; gap:0; }
+.gh-commit { display:flex; align-items:flex-start; gap:12px; padding:12px 0; border-bottom:.5px solid var(--line); }
+.gh-commit:last-child { border-bottom:none; }
+.gh-commit-dot { width:8px; height:8px; border-radius:50%; background:var(--grn); flex-shrink:0; margin-top:5px; box-shadow:0 0 8px rgba(34,197,94,.4); }
+.gh-commit-body { flex:1; }
+.gh-commit-repo { font-size:11px; font-weight:600; color:var(--ind3); letter-spacing:.03em; margin-bottom:2px; }
+.gh-commit-msg { font-size:13px; color:var(--t1); font-weight:400; line-height:1.4; }
+.gh-commit-time { font-size:10px; color:var(--t3); margin-top:3px; }
+.gh-stat-row { display:flex; gap:20px; padding:16px 0 0; }
+.gh-stat { text-align:center; }
+.gh-stat-n { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; color:var(--t1); }
+.gh-stat-l { font-size:10px; color:var(--t3); font-weight:600; letter-spacing:.06em; text-transform:uppercase; margin-top:2px; }
+.gh-connect { display:flex; flex-direction:column; align-items:flex-start; gap:14px; background:var(--s1); border:.5px solid var(--line2); border-radius:20px; padding:20px; }
+.gh-connect-t { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; }
+.gh-connect-s { font-size:13px; color:var(--t2); line-height:1.6; }
+.gh-inp-row { display:flex; gap:8px; width:100%; }
+.gh-inp { flex:1; background:var(--s2); border:.5px solid var(--line2); border-radius:10px; padding:11px 14px; font-size:14px; color:var(--t1); font-family:'Inter',sans-serif; outline:none; }
+.gh-inp::placeholder { color:var(--t3); }
+.gh-inp:focus { border-color:rgba(91,91,214,.5); }
+.gh-save { padding:11px 18px; border-radius:10px; border:none; background:linear-gradient(135deg,#5b5bd6,#7c7ce8); color:#fff; font-size:13px; font-weight:700; cursor:pointer; font-family:'Syne',sans-serif; white-space:nowrap; }
+.gh-save:active { opacity:.85; }
+
+/* ── CONNECT CARD ── */
+.connect-card { background:var(--s1); border:.5px solid var(--line2); border-radius:20px; padding:20px; margin:0; }
+.cc-top { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+.cc-ico { width:44px; height:44px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+.cc-name { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; }
+.cc-sub { font-size:12px; color:var(--t3); margin-top:2px; }
+.cc-desc { font-size:13px; color:var(--t2); line-height:1.65; margin-bottom:16px; }
+.cc-btn { width:100%; padding:13px; border-radius:12px; border:none; background:linear-gradient(135deg,#5b5bd6,#7c7ce8); color:#fff; font-size:14px; font-weight:700; cursor:pointer; font-family:'Syne',sans-serif; box-shadow:0 4px 20px rgba(91,91,214,.25); letter-spacing:-.1px; }
+.cc-btn:active { opacity:.85; }
+.cc-btn.connected { background:rgba(34,197,94,.12); color:var(--grn); box-shadow:none; }
+
+/* ── NEWS ── */
+.ni { display:block; text-decoration:none; padding:16px 0; border-bottom:.5px solid var(--line); }
+.ni:last-child { border-bottom:none; }
+.ni:active { opacity:.7; }
+.ni-row { display:flex; align-items:flex-start; gap:12px; }
+.ni-bar { width:3px; min-height:44px; border-radius:2px; flex-shrink:0; margin-top:3px; }
+.ni-b { flex:1; }
+.ni-src { font-size:10px; font-weight:700; color:var(--t3); letter-spacing:.08em; text-transform:uppercase; margin-bottom:5px; }
+.ni-hl { font-size:14px; font-weight:500; color:var(--t1); line-height:1.5; }
+.ni-more { font-size:11px; font-weight:600; margin-top:6px; display:inline-flex; align-items:center; gap:3px; }
 
 /* ── MAP ── */
-#map-wrap{height:calc(100dvh - 56px - var(--safe-t) - var(--nav-h) - var(--safe-b));position:relative}
-#leaflet-map{height:100%;width:100%}
-.map-bar{position:absolute;bottom:16px;left:14px;right:14px;z-index:400;background:rgba(6,6,15,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:0.5px solid var(--border2);border-radius:18px;padding:13px 16px;display:flex;align-items:center;gap:12px}
-.map-info{flex:1}
-.map-city{font-family:'Syne',sans-serif;font-size:15px;font-weight:700}
-.map-coords{font-size:11px;color:var(--text3);margin-top:2px}
-.map-open{font-size:12px;font-weight:600;padding:8px 16px;border-radius:20px;border:none;background:linear-gradient(135deg,var(--purple),#5040ff);color:#fff;cursor:pointer;white-space:nowrap}
-.map-open:active{opacity:.85}
+.map-pg-inner { height:calc(100dvh - var(--st) - 56px - 62px - var(--sb)); position:relative; }
+#lmap { height:100%; width:100%; }
+.map-card { position:absolute; bottom:16px; left:14px; right:14px; z-index:400; background:rgba(8,11,20,.93); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:.5px solid var(--line2); border-radius:20px; padding:14px 16px; display:flex; align-items:center; gap:12px; }
+.map-card-info { flex:1; }
+.mc-city { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; }
+.mc-coords { font-size:11px; color:var(--t3); margin-top:2px; }
+.mc-open { font-size:13px; font-weight:700; padding:10px 20px; border-radius:20px; border:none; background:linear-gradient(135deg,#5b5bd6,#7c7ce8); color:#fff; cursor:pointer; white-space:nowrap; }
+.mc-open:active { opacity:.85; }
 
-/* ── TRIPS ── */
-.trip{margin:10px 14px 0;background:var(--glass);border:0.5px solid var(--border);border-radius:18px;padding:15px 16px;position:relative}
-.trip-type{font-size:28px;margin-bottom:8px}
-.trip-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:3px}
-.trip-meta{font-size:12px;color:var(--text3);line-height:1.5}
-.trip-badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 9px;border-radius:10px;margin-left:8px;letter-spacing:.04em}
-.tb-today{background:var(--amberbg);color:var(--amber)}
-.tb-tmr{background:var(--bluebg);color:var(--blue)}
-.tb-past{background:var(--bg4);color:var(--text3)}
-.tb-upcoming{background:var(--greenbg);color:var(--green)}
-.trip-del{position:absolute;top:14px;right:14px;background:none;border:none;cursor:pointer;color:var(--text3);font-size:20px;opacity:.5}
-.trip-del:active{opacity:1;color:var(--red)}
-/* TRIP FORM */
-.tform{background:var(--glass);border:0.5px solid var(--border);border-radius:22px;margin:10px 14px 0;padding:18px}
-.tform-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:2px}
-.tform-sub{font-size:12px;color:var(--text3);margin-bottom:16px}
-.tflabel{font-size:11px;color:var(--text3);font-weight:600;letter-spacing:.04em;text-transform:uppercase;display:block;margin-bottom:5px;margin-top:14px}
-.tflabel:first-of-type{margin-top:0}
-.tfinput{width:100%;background:var(--bg3);border:0.5px solid var(--border2);border-radius:12px;padding:11px 14px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;-webkit-appearance:none}
-.tfinput:focus{border-color:rgba(124,92,252,0.4)}
-.tfinput::placeholder{color:var(--text3)}
-.tf2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.tfsave{width:100%;margin-top:16px;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--purple),#5040ff);color:#fff;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;letter-spacing:-.2px;box-shadow:0 4px 20px rgba(124,92,252,0.3)}
-.tfsave:active{opacity:.85;transform:scale(.98)}
+/* ── CONNECT PAGE ── */
+.connect-section { padding:20px 20px 0; }
+.connect-section-t { font-family:'Syne',sans-serif; font-size:11px; font-weight:700; color:var(--t3); letter-spacing:.1em; text-transform:uppercase; margin-bottom:14px; }
+.connect-list { display:flex; flex-direction:column; gap:10px; }
 
-/* ── WEATHER PAGE ── */
-.fc-row{display:flex;align-items:center;padding:11px 0;border-bottom:0.5px solid var(--border)}
-.fc-row:last-child{border-bottom:none}
-.fc-day{width:88px;font-size:13px;font-weight:500}
-.fc-ico{font-size:20px;margin-right:10px}
-.fc-prec{flex:1;font-size:11px;color:var(--text3)}
-.fc-temps{font-size:14px;font-weight:600}
+/* ── SETTINGS / ABOUT ── */
+.about-section { padding:28px 20px 0; }
+.about-logo { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+.about-version { font-size:12px; color:var(--t3); margin-top:2px; }
+.setting-row { display:flex; align-items:center; gap:12px; padding:16px 0; border-bottom:.5px solid var(--line); }
+.setting-row:last-child { border-bottom:none; }
+.setting-ico { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.setting-body { flex:1; }
+.setting-name { font-size:14px; font-weight:500; }
+.setting-sub { font-size:12px; color:var(--t3); margin-top:1px; }
 
-/* ── APPS GRID ── */
-.apps-section{margin:10px 14px 0}
-.apps-section-title{font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;padding:12px 2px 8px}
-.apps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.app-item{display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;text-decoration:none;background:none;border:none;padding:0}
-.app-item:active .app-ico{transform:scale(.9)}
-.app-ico{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;transition:transform .15s;border:0.5px solid var(--border)}
-.app-lbl{font-size:10px;font-weight:500;color:var(--text2);text-align:center}
+/* ── FORM ── */
+.form-sec { padding:20px 20px 0; }
+.form-t { font-family:'Syne',sans-serif; font-size:17px; font-weight:700; margin-bottom:4px; }
+.form-s { font-size:13px; color:var(--t3); margin-bottom:18px; }
+.flbl { font-size:10px; font-weight:700; color:var(--t3); letter-spacing:.08em; text-transform:uppercase; display:block; margin-bottom:6px; margin-top:16px; }
+.flbl:first-of-type { margin-top:0; }
+.finp { width:100%; background:var(--s2); border:.5px solid var(--line2); border-radius:12px; padding:13px 15px; font-size:14px; color:var(--t1); font-family:'Inter',sans-serif; outline:none; -webkit-appearance:none; transition:border-color .2s; }
+.finp:focus { border-color:rgba(91,91,214,.5); }
+.finp::placeholder { color:var(--t3); }
+.frow { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.fsave { width:100%; margin-top:20px; padding:15px; border-radius:14px; border:none; background:linear-gradient(135deg,#5b5bd6,#7c7ce8); color:#fff; font-size:15px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; box-shadow:0 4px 24px rgba(91,91,214,.28); }
+.fsave:active { opacity:.85; }
 
-/* ── SHIMMER ── */
-.shim{height:14px;border-radius:7px;background:var(--bg3);margin-bottom:8px;animation:shim 1.4s infinite}
-@keyframes shim{0%,100%{opacity:.3}50%{opacity:.6}}
+/* ── FLIGHTS (auto) ── */
+.flight-item { display:flex; align-items:center; gap:14px; padding:16px 0; border-bottom:.5px solid var(--line); }
+.flight-item:last-child { border-bottom:none; }
+.flight-route { display:flex; align-items:center; gap:8px; flex:1; }
+.flight-code { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; letter-spacing:-.5px; }
+.flight-arrow { color:var(--t3); font-size:18px; }
+.flight-right { text-align:right; }
+.flight-date { font-size:13px; font-weight:500; }
+.flight-info { font-size:11px; color:var(--t3); margin-top:2px; }
+.flight-badge { font-size:10px; font-weight:700; padding:3px 9px; border-radius:8px; }
 
-/* ── CALENDAR ── */
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding:0 16px 16px}
-.cal-dayname{font-size:10px;font-weight:700;color:var(--text3);text-align:center;padding:4px 0;letter-spacing:.04em}
-.cal-day{font-size:13px;font-weight:400;text-align:center;padding:8px 0;border-radius:10px;cursor:pointer;transition:all .2s;color:var(--text2);line-height:1}
-.cal-day:active{background:var(--bg4)}
-.cal-day.today{background:linear-gradient(135deg,var(--purple),#5040ff);color:#fff;font-weight:700;box-shadow:0 2px 12px rgba(124,92,252,0.4)}
-.cal-day.has-trip{position:relative}.cal-day.has-trip::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--amber)}
-.cal-day.other-month{color:var(--text3)}
-.cal-month-nav{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px}
-.cal-month-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700}
-.cal-nav-btn{width:32px;height:32px;border-radius:50%;background:var(--glass2);border:0.5px solid var(--border);cursor:pointer;color:var(--text2);font-size:16px;display:flex;align-items:center;justify-content:center}
-.cal-nav-btn:active{background:var(--bg4)}
-
-/* EMPTY */
-.empty{text-align:center;padding:32px 20px}
-.empty-ico{font-size:40px;opacity:.25;margin-bottom:12px}
-.empty-t{font-size:14px;font-weight:500;color:var(--text2);margin-bottom:4px}
-.empty-s{font-size:12px;color:var(--text3);line-height:1.6}
-.empty-btn{margin-top:16px;display:inline-block;font-size:13px;font-weight:600;color:var(--purple2);background:var(--purplebg);border:none;border-radius:20px;padding:10px 22px;cursor:pointer}
-
-/* MODAL */
-.mo{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.65);backdrop-filter:blur(10px);align-items:flex-end;justify-content:center}
-.mo.open{display:flex}
-.mo-box{background:var(--bg2);border:0.5px solid var(--border2);border-radius:28px 28px 0 0;padding:20px 20px calc(var(--safe-b)+28px);width:100%;max-width:600px}
-.mo-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 18px}
-.mo-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:6px}
-.mo-desc{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:18px}
-.mo-p{width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--purple),#5040ff);color:#fff;font-size:15px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;margin-bottom:10px}
-.mo-s{width:100%;padding:14px;border-radius:14px;border:none;background:var(--bg3);color:var(--text2);font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer}
+/* ── EMPTY ── */
+.empty { text-align:center; padding:32px 20px; }
+.empty-ico { font-size:44px; opacity:.2; margin-bottom:12px; }
+.empty-t { font-size:15px; font-weight:600; color:var(--t2); margin-bottom:6px; }
+.empty-s { font-size:13px; color:var(--t3); line-height:1.65; max-width:270px; margin:0 auto; }
 </style>
 </head>
 <body>
-<div id="app">
+<div id="shell">
 
-<!-- HEADER -->
-<div id="hdr">
-  <div class="hdr-left">
-    <div class="hdr-date" id="hdr-date"></div>
-    <div class="hdr-greet" id="hdr-greet"></div>
-    <div class="hdr-loc"><div class="hdr-dot"></div><span id="hdr-loc">Detecting location...</span></div>
+<!-- TOPBAR -->
+<div id="topbar">
+  <div class="logo-mark">
+    <svg class="logo-svg" width="26" height="26" viewBox="0 0 26 26" fill="none">
+      <defs>
+        <linearGradient id="lg" x1="0" y1="0" x2="26" y2="26" gradientUnits="userSpaceOnUse">
+          <stop stop-color="#a5a5f5"/>
+          <stop offset="1" stop-color="#5b5bd6"/>
+        </linearGradient>
+      </defs>
+      <path d="M3 21 L3 10 L13 18.5 L23 10 L23 21" stroke="url(#lg)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <circle cx="13" cy="5" r="2.5" fill="url(#lg)"/>
+    </svg>
+    <span class="logo-word">MyLife</span>
   </div>
-  <button id="rbtn" onclick="refreshAll()" aria-label="Refresh">
-    <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-  </button>
-</div>
-
-<div id="scroll">
-
-<!-- ══ HOME ══════════════════════════════════════════════════════ -->
-<div id="pg-home" class="page active">
-
-  <!-- Smart summary hero -->
-  <div class="hero">
-    <div class="hero-loc"><span>📍</span><span id="hero-loc">Detecting...</span></div>
-    <div class="hero-greeting" id="hero-greet">Good morning</div>
-    <div class="hero-items" id="hero-items">
-      <div class="hero-item"><div class="hero-icon">🌤</div><div class="hero-text">Loading your briefing...</div></div>
-    </div>
+  <div class="topbar-center">
+    <div class="tb-date" id="tb-date"></div>
+    <div class="tb-greet" id="tb-greet"></div>
   </div>
-
-  <!-- Weather widget -->
-  <div class="w-widget">
-    <div class="w-widget-bg"><div class="w-glow1"></div><div class="w-glow2"></div></div>
-    <div class="w-content">
-      <div class="w-top">
-        <div class="w-left">
-          <div class="w-city" id="w-city">VILNIUS</div>
-          <div class="w-temp-row">
-            <div class="w-temp" id="w-temp">—</div>
-            <div class="w-unit">°C</div>
-          </div>
-          <div class="w-cond" id="w-cond"><span id="w-cond-text">Loading...</span></div>
-        </div>
-        <div class="w-icon-big" id="w-big-icon">🌡</div>
-      </div>
-      <div class="w-pills" id="w-pills"></div>
+  <div class="topbar-right">
+    <div class="loc-chip">
+      <div class="loc-dot"></div>
+      <span class="loc-text" id="loc-text">Locating...</span>
     </div>
-  </div>
-
-  <!-- Quick actions -->
-  <div class="card" style="margin-top:10px">
-    <div class="ch"><div class="ci" style="background:var(--purplebg)">⚡</div><div class="ct">Quick actions</div></div>
-    <div class="qa-grid">
-      <button class="qa" onclick="openApp('whatsapp://','https://web.whatsapp.com')">
-        <div class="qa-icon" style="background:linear-gradient(135deg,#128c7e,#25d366)">💬</div><div class="qa-lbl">WhatsApp</div>
-      </button>
-      <button class="qa" onclick="openMaps()">
-        <div class="qa-icon" style="background:linear-gradient(135deg,#1a73e8,#34a853)">🗺️</div><div class="qa-lbl">Maps</div>
-      </button>
-      <button class="qa" onclick="openApp('calshow://','https://calendar.google.com')">
-        <div class="qa-icon" style="background:linear-gradient(135deg,#4285f4,#34a853)">📅</div><div class="qa-lbl">Calendar</div>
-      </button>
-      <button class="qa" onclick="openApp('message://','https://mail.google.com')">
-        <div class="qa-icon" style="background:linear-gradient(135deg,#ea4335,#fbbc04)">📧</div><div class="qa-lbl">Email</div>
-      </button>
-      <button class="qa" onclick="openApp('tel://','tel://')">
-        <div class="qa-icon" style="background:linear-gradient(135deg,#34c759,#30d158)">📞</div><div class="qa-lbl">Phone</div>
-      </button>
-      <button class="qa" onclick="goPage('weather')">
-        <div class="qa-icon" style="background:linear-gradient(135deg,#007aff,#5ac8fa)">🌤</div><div class="qa-lbl">Weather</div>
-      </button>
-      <button class="qa" onclick="goPage('trips')">
-        <div class="qa-icon" style="background:linear-gradient(135deg,#ff6b35,#f7c59f)">✈️</div><div class="qa-lbl">My Trips</div>
-      </button>
-      <button class="qa" onclick="goPage('news')">
-        <div class="qa-icon" style="background:linear-gradient(135deg,#5856d6,#af52de)">📰</div><div class="qa-lbl">News</div>
-      </button>
-    </div>
-  </div>
-
-  <!-- Tasks preview -->
-  <div class="card">
-    <div class="ch">
-      <div class="ci" style="background:var(--greenbg)">✅</div>
-      <div class="ct">Tasks</div>
-      <button class="ca" onclick="goPage('tasks')">See all</button>
-    </div>
-    <div id="home-tasks" class="cb" style="padding-top:0;font-size:13px;color:var(--text3)">No tasks yet</div>
-  </div>
-
-  <!-- News mini -->
-  <div class="card">
-    <div class="ch">
-      <div class="ci" style="background:var(--pinkbg)">📰</div>
-      <div class="ct" id="home-news-title">Local News</div>
-      <button class="ca" onclick="goPage('news')">More</button>
-    </div>
-    <div id="home-news-list"></div>
-  </div>
-
-  <div style="height:10px"></div>
-</div>
-
-<!-- ══ MAP ════════════════════════════════════════════════════════ -->
-<div id="pg-map" class="page">
-  <div id="map-wrap">
-    <div id="leaflet-map"></div>
-    <div class="map-bar">
-      <div class="map-info">
-        <div class="map-city" id="map-city">Your Location</div>
-        <div class="map-coords" id="map-coords">Getting coordinates...</div>
-      </div>
-      <button class="map-open" onclick="openMaps()">Open in Maps</button>
-    </div>
+    <button class="icon-btn" id="rbtn" aria-label="Refresh">
+      <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+    </button>
   </div>
 </div>
 
-<!-- ══ WEATHER ═══════════════════════════════════════════════════ -->
-<div id="pg-weather" class="page">
-  <div class="sh"><div class="sh-t">Weather</div><div class="sh-s" id="w-updated"></div></div>
-  <div class="w-widget" style="margin:0 14px">
-    <div class="w-widget-bg"><div class="w-glow1"></div><div class="w-glow2"></div></div>
-    <div class="w-content">
-      <div class="w-top">
-        <div class="w-left">
-          <div class="w-city" id="w2-city">DETECTING...</div>
-          <div class="w-temp-row">
-            <div class="w-temp" id="w2-temp">—</div>
-            <div class="w-unit">°C</div>
-          </div>
-          <div class="w-cond"><span id="w2-cond"></span></div>
-        </div>
-        <div class="w-icon-big" id="w2-icon">🌡</div>
-      </div>
-      <div class="w-pills" id="w2-pills"></div>
-    </div>
-  </div>
-  <div class="card" style="margin-top:10px">
-    <div class="ch"><div class="ci" style="background:var(--bluebg)">📅</div><div class="ct">7-Day Forecast</div></div>
-    <div id="forecast" style="padding:0 16px 14px"><div class="shim"></div><div class="shim"></div><div class="shim"></div></div>
-  </div>
-  <div style="height:10px"></div>
-</div>
+<!-- PAGES -->
+<div id="pages">
 
-<!-- ══ CALENDAR ═══════════════════════════════════════════════════ -->
-<div id="pg-calendar" class="page">
-  <div class="sh"><div class="sh-t">Calendar</div></div>
-  <div class="card">
-    <div class="cal-month-nav">
-      <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
-      <div class="cal-month-title" id="cal-month-title"></div>
-      <button class="cal-nav-btn" onclick="changeMonth(1)">›</button>
+<!-- TODAY -->
+<div id="pg-today" class="pg on">
+<div class="pg-pad">
+
+  <!-- AI BRIEF -->
+  <div class="ai-section">
+    <div class="ai-badge"><div class="ai-badge-dot"></div>AI Daily Brief</div>
+    <div id="ai-body"><div><div class="shim w90"></div><div class="shim w75"></div><div class="shim w60"></div></div></div>
+    <div class="ai-footer">
+      <span class="ai-ts" id="ai-ts"></span>
+      <button class="ai-regen" id="ai-regen-btn">Regenerate</button>
     </div>
-    <div class="cal-grid" id="cal-grid"></div>
   </div>
-  <!-- Add event -->
-  <div class="tform" style="margin-top:10px">
-    <div class="tform-title">Add to calendar</div>
-    <div class="tform-sub">Events show as dots on the calendar above</div>
-    <label class="tflabel">Event name</label>
-    <input class="tfinput" id="ev-name" placeholder="Meeting, birthday, appointment...">
-    <div class="tf2">
+
+  <div style="height:24px"></div>
+  <div class="s-divider"></div>
+
+  <!-- WEATHER -->
+  <div class="wx-section">
+    <div class="wx-city" id="wx-city">DETECTING YOUR LOCATION</div>
+    <div class="wx-main">
       <div>
-        <label class="tflabel">Date</label>
-        <input class="tfinput" id="ev-date" type="date">
+        <div class="wx-temp-row">
+          <div class="wx-num" id="wx-num">—</div>
+          <div class="wx-deg">°C</div>
+        </div>
+        <div class="wx-cond" id="wx-cond">Loading...</div>
       </div>
+      <div class="wx-emoji" id="wx-emoji">🌡</div>
+    </div>
+    <div class="wx-pills" id="wx-pills"></div>
+    <div class="wx-strip" id="wx-strip"></div>
+  </div>
+
+  <div style="height:28px"></div>
+  <div class="s-divider"></div>
+
+  <!-- ACTIVITY STATS -->
+  <div class="s-head">
+    <div class="s-label">Today's Activity<button class="s-label-act" id="health-connect-btn">Connect Health</button></div>
+  </div>
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-ico">👟</div>
+      <div class="stat-val" id="stat-steps" style="color:var(--grn)">—</div>
+      <div class="stat-lbl">Steps</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-ico">📍</div>
+      <div class="stat-val" id="stat-km" style="color:var(--blue)">—</div>
+      <div class="stat-lbl">km</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-ico">🔥</div>
+      <div class="stat-val" id="stat-cal" style="color:var(--amb)">—</div>
+      <div class="stat-lbl">kcal</div>
+    </div>
+  </div>
+
+  <div style="height:28px"></div>
+  <div class="s-divider"></div>
+
+  <!-- GITHUB -->
+  <div class="gh-section">
+    <div class="s-label">GitHub Activity<button class="s-label-act" id="gh-settings-btn">Settings</button></div>
+    <div id="gh-content"></div>
+  </div>
+
+  <div style="height:28px"></div>
+  <div class="s-divider"></div>
+
+  <!-- NEWS -->
+  <div class="s-head">
+    <div class="s-label">Headlines<button class="s-label-act" id="news-more-btn">All news</button></div>
+  </div>
+  <div style="padding:0 20px" id="home-news"></div>
+
+  <div style="height:28px"></div>
+  <div class="s-divider"></div>
+
+  <!-- FLIGHTS -->
+  <div class="s-head">
+    <div class="s-label">Flights & Travel</div>
+  </div>
+  <div style="padding:0 20px" id="flights-section"></div>
+
+</div><!-- /pg-pad -->
+</div>
+
+<!-- NEWS -->
+<div id="pg-news" class="pg">
+<div class="pg-pad">
+  <div style="padding:24px 20px 0"><div class="s-label" style="font-size:14px;font-family:Syne,sans-serif;font-weight:800;letter-spacing:-.3px;text-transform:none;color:var(--t1)">News</div></div>
+  <div style="padding:8px 20px 0"><div class="s-label" id="lt-lbl">Local</div></div>
+  <div style="padding:0 20px" id="lt-news"></div>
+  <div class="s-divider" style="margin:8px 20px"></div>
+  <div style="padding:16px 20px 0"><div class="s-label">World</div></div>
+  <div style="padding:0 20px" id="world-news"></div>
+  <div class="s-divider" style="margin:8px 20px"></div>
+  <div style="padding:16px 20px 0"><div class="s-label">Business & Tech</div></div>
+  <div style="padding:0 20px" id="biz-news"></div>
+</div>
+</div>
+
+<!-- MAP -->
+<div id="pg-map" class="pg">
+  <div class="map-pg-inner">
+    <div id="lmap"></div>
+    <div class="map-card">
+      <div class="map-card-info">
+        <div class="mc-city" id="mc-city">Your Location</div>
+        <div class="mc-coords" id="mc-coords">Getting GPS...</div>
+      </div>
+      <button class="mc-open" id="mc-open-btn">Open Maps</button>
+    </div>
+  </div>
+</div>
+
+<!-- WEATHER FULL -->
+<div id="pg-weather" class="pg">
+<div class="pg-pad">
+  <div style="padding:24px 20px 0"><div style="font-family:Syne,sans-serif;font-size:24px;font-weight:800;letter-spacing:-.5px;background:linear-gradient(135deg,#ececf4,#a5a5f5);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Weather</div></div>
+  <div class="wx-section" style="padding-top:16px">
+    <div class="wx-city" id="wx2-city">DETECTING</div>
+    <div class="wx-main">
       <div>
-        <label class="tflabel">Time</label>
-        <input class="tfinput" id="ev-time" type="time">
+        <div class="wx-temp-row">
+          <div class="wx-num" id="wx2-num">—</div>
+          <div class="wx-deg">°C</div>
+        </div>
+        <div class="wx-cond" id="wx2-cond"></div>
+      </div>
+      <div class="wx-emoji" id="wx2-emoji">🌡</div>
+    </div>
+    <div class="wx-pills" id="wx2-pills"></div>
+  </div>
+  <div style="height:28px"></div>
+  <div style="padding:0 20px">
+    <div class="s-label">7-Day Forecast</div>
+    <div id="forecast"></div>
+  </div>
+</div>
+</div>
+
+<!-- CONNECT -->
+<div id="pg-connect" class="pg">
+<div class="pg-pad">
+  <div style="padding:24px 20px 0"><div style="font-family:Syne,sans-serif;font-size:24px;font-weight:800;letter-spacing:-.5px;background:linear-gradient(135deg,#ececf4,#a5a5f5);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Connect</div><div style="font-size:13px;color:var(--t3);margin-top:4px">Link your accounts to unlock everything</div></div>
+
+  <div class="connect-section" style="padding-top:24px">
+    <div class="connect-section-t">Productivity</div>
+    <div class="connect-list">
+      <div class="connect-card">
+        <div class="cc-top">
+          <div class="cc-ico" style="background:linear-gradient(135deg,#0f3460,#e94560)">📧</div>
+          <div><div class="cc-name">Gmail</div><div class="cc-sub">Inbox, flights, bookings</div></div>
+        </div>
+        <div class="cc-desc">Connect Gmail to automatically detect flights, hotel bookings, events and show your inbox summary every day. No manual entry needed.</div>
+        <button class="cc-btn" id="gmail-btn">Connect Gmail</button>
+      </div>
+      <div class="connect-card">
+        <div class="cc-top">
+          <div class="cc-ico" style="background:linear-gradient(135deg,#1a1a2e,#4a4a8a)">📅</div>
+          <div><div class="cc-name">Google Calendar</div><div class="cc-sub">Events, meetings, reminders</div></div>
+        </div>
+        <div class="cc-desc">See all your upcoming events, meetings and reminders without switching apps.</div>
+        <button class="cc-btn" id="gcal-btn">Connect Calendar</button>
       </div>
     </div>
-    <button class="tfsave" onclick="addEvent()">Add event</button>
   </div>
-  <!-- Events list -->
-  <div class="sh" style="padding-top:14px"><div class="sh-t" style="font-size:17px">Upcoming</div></div>
-  <div id="events-list" style="padding:0 14px 0"></div>
-  <div style="height:10px"></div>
-</div>
 
-<!-- ══ TRIPS ══════════════════════════════════════════════════════ -->
-<div id="pg-trips" class="page">
-  <div class="sh"><div class="sh-t">My Trips</div><div class="sh-s">Flights & travel</div></div>
-  <div id="trips-list"></div>
-  <div class="tform">
-    <div class="tform-title">Add a trip</div>
-    <div class="tform-sub">Shows in your home summary automatically</div>
-    <label class="tflabel">Type</label>
-    <select class="tfinput" id="t-type">
-      <option value="flight">✈️ Flight</option>
-      <option value="hotel">🏨 Hotel</option>
-      <option value="event">🎫 Event</option>
-      <option value="trip">🌍 Trip</option>
-    </select>
-    <label class="tflabel">Title</label>
-    <input class="tfinput" id="t-title" placeholder="Flight to Rome, Italy">
-    <div class="tf2">
-      <div><label class="tflabel">Date</label><input class="tfinput" id="t-date" type="date"></div>
-      <div><label class="tflabel">Time</label><input class="tfinput" id="t-time" type="time"></div>
+  <div class="connect-section">
+    <div class="connect-section-t">Developer</div>
+    <div class="connect-list">
+      <div class="connect-card">
+        <div class="cc-top">
+          <div class="cc-ico" style="background:linear-gradient(135deg,#0d1117,#333)">🐙</div>
+          <div><div class="cc-name">GitHub</div><div class="cc-sub">Commits, repos, activity</div></div>
+        </div>
+        <div class="cc-desc">See today's commits, pull requests and repo activity. AI summarizes your coding day — "You were productive, pushed 5 commits to 2 projects."</div>
+        <div class="gh-inp-row" style="margin-top:0">
+          <input class="gh-inp" id="gh-inp-connect" placeholder="Your GitHub username">
+          <button class="gh-save" id="gh-save-connect">Save</button>
+        </div>
+      </div>
     </div>
-    <label class="tflabel">Notes (booking ref, gate...)</label>
-    <input class="tfinput" id="t-notes" placeholder="Ref: XY1234, Gate B12">
-    <button class="tfsave" onclick="saveTrip()">Save trip</button>
   </div>
-  <div style="height:10px"></div>
-</div>
 
-<!-- ══ TASKS ══════════════════════════════════════════════════════ -->
-<div id="pg-tasks" class="page">
-  <div class="sh"><div class="sh-t">Tasks</div><div class="sh-s" id="task-count"></div></div>
-  <div class="card">
-    <div id="task-list"></div>
-    <div class="addbar">
-      <input class="addinp" id="task-inp" placeholder="Add a new task...">
-      <button class="addbtn" onclick="addTask()" aria-label="Add">
-        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  <div class="connect-section">
+    <div class="connect-section-t">Health</div>
+    <div class="connect-list">
+      <div class="connect-card">
+        <div class="cc-top">
+          <div class="cc-ico" style="background:linear-gradient(135deg,#0a2e0a,#22c55e)">❤️</div>
+          <div><div class="cc-name">Apple Health</div><div class="cc-sub">Steps, km, calories, sleep</div></div>
+        </div>
+        <div class="cc-desc">Apple Health data is protected and can only be read by native iOS apps. To see your steps and activity, install the MyLife companion app from the App Store.</div>
+        <button class="cc-btn" style="background:var(--s2);color:var(--t3);box-shadow:none">Coming soon — App Store</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="connect-section">
+    <div class="connect-section-t">Communication</div>
+    <div class="connect-list">
+      <div style="display:flex;flex-direction:column;gap:0;background:var(--s1);border:.5px solid var(--line2);border-radius:20px;overflow:hidden">
+        <div class="setting-row" style="padding:14px 18px">
+          <div class="setting-ico" style="background:linear-gradient(135deg,#075e54,#25d366)">💬</div>
+          <div class="setting-body"><div class="setting-name">WhatsApp</div><div class="setting-sub">Open app directly</div></div>
+          <button style="font-size:12px;font-weight:600;color:var(--ind3);background:none;border:none;cursor:pointer" onclick="nativeOpen('whatsapp://','https://web.whatsapp.com')">Open</button>
+        </div>
+        <div class="setting-row" style="padding:14px 18px">
+          <div class="setting-ico" style="background:linear-gradient(135deg,#0a1e3d,#0088cc)">✈️</div>
+          <div class="setting-body"><div class="setting-name">Telegram</div><div class="setting-sub">Open app directly</div></div>
+          <button style="font-size:12px;font-weight:600;color:var(--ind3);background:none;border:none;cursor:pointer" onclick="nativeOpen('telegram://','https://web.telegram.org')">Open</button>
+        </div>
+        <div class="setting-row" style="padding:14px 18px;border:none">
+          <div class="setting-ico" style="background:linear-gradient(135deg,#0a3d2e,#25d366)">📞</div>
+          <div class="setting-body"><div class="setting-name">Phone & Messages</div><div class="setting-sub">iOS native apps</div></div>
+          <button style="font-size:12px;font-weight:600;color:var(--ind3);background:none;border:none;cursor:pointer" onclick="nativeOpen('tel://','tel://')">Open</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connect-section">
+    <div class="connect-section-t">Travel & More</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button class="setting-row" style="background:var(--s1);border:.5px solid var(--line2);border-radius:16px;padding:16px 14px;flex-direction:column;align-items:flex-start;gap:8px;cursor:pointer;text-align:left" onclick="nativeOpen('','https://www.google.com/flights')">
+        <div style="font-size:26px">✈️</div><div style="font-size:13px;font-weight:600">Google Flights</div><div style="font-size:11px;color:var(--t3)">Search flights</div>
+      </button>
+      <button class="setting-row" style="background:var(--s1);border:.5px solid var(--line2);border-radius:16px;padding:16px 14px;flex-direction:column;align-items:flex-start;gap:8px;cursor:pointer;text-align:left" onclick="nativeOpen('','https://www.booking.com')">
+        <div style="font-size:26px">🏨</div><div style="font-size:13px;font-weight:600">Booking.com</div><div style="font-size:11px;color:var(--t3)">Hotels & stays</div>
+      </button>
+      <button class="setting-row" style="background:var(--s1);border:.5px solid var(--line2);border-radius:16px;padding:16px 14px;flex-direction:column;align-items:flex-start;gap:8px;cursor:pointer;text-align:left" onclick="nativeOpen('spotify://','https://open.spotify.com')">
+        <div style="font-size:26px">🎵</div><div style="font-size:13px;font-weight:600">Spotify</div><div style="font-size:11px;color:var(--t3)">Music</div>
+      </button>
+      <button class="setting-row" style="background:var(--s1);border:.5px solid var(--line2);border-radius:16px;padding:16px 14px;flex-direction:column;align-items:flex-start;gap:8px;cursor:pointer;text-align:left" onclick="nativeOpen('instagram://','https://www.instagram.com')">
+        <div style="font-size:26px">📸</div><div style="font-size:13px;font-weight:600">Instagram</div><div style="font-size:11px;color:var(--t3)">Social</div>
       </button>
     </div>
   </div>
-  <div class="card" style="margin-top:10px">
-    <div class="ch"><div class="ci" style="background:var(--amberbg)">⚡</div><div class="ct">Quick add</div></div>
-    <div style="display:flex;flex-wrap:wrap;gap:7px;padding:0 16px 16px">
-      <button class="qpill" onclick="quickTask('Buy groceries')">🛒 Groceries</button>
-      <button class="qpill" onclick="quickTask('Call doctor')">🏥 Doctor</button>
-      <button class="qpill" onclick="quickTask('Pay bills')">💳 Bills</button>
-      <button class="qpill" onclick="quickTask('Gym workout')">💪 Gym</button>
-      <button class="qpill" onclick="quickTask('Read emails')">📧 Emails</button>
-      <button class="qpill" onclick="quickTask('Study')">📚 Study</button>
-      <button class="qpill" onclick="quickTask('Call family')">📞 Family</button>
-      <button class="qpill" onclick="quickTask('Clean house')">🧹 Clean</button>
-    </div>
-  </div>
-  <div style="height:10px"></div>
+
+</div>
 </div>
 
-<!-- ══ NEWS ═══════════════════════════════════════════════════════ -->
-<div id="pg-news" class="page">
-  <div class="sh"><div class="sh-t">News</div><div class="sh-s" id="news-time"></div></div>
-  <div class="card"><div class="ch"><div class="ci" style="background:var(--redbg)">📍</div><div class="ct" id="news-local-t">Local</div></div><div id="lt-news"><div style="padding:12px 16px"><div class="shim" style="width:90%"></div><div class="shim" style="width:65%"></div><div class="shim" style="width:80%"></div></div></div></div>
-  <div class="card" style="margin-top:10px"><div class="ch"><div class="ci" style="background:var(--bluebg)">🌐</div><div class="ct">World</div></div><div id="world-news"><div style="padding:12px 16px"><div class="shim" style="width:85%"></div><div class="shim" style="width:60%"></div><div class="shim" style="width:75%"></div></div></div></div>
-  <div class="card" style="margin-top:10px"><div class="ch"><div class="ci" style="background:var(--amberbg)">💼</div><div class="ct">Business & Tech</div></div><div id="biz-news"><div style="padding:12px 16px"><div class="shim" style="width:80%"></div><div class="shim" style="width:55%"></div></div></div></div>
-  <div style="height:10px"></div>
-</div>
-
-</div><!-- /scroll -->
+</div><!-- /pages -->
 
 <!-- NAV -->
 <nav id="nav">
-  <button class="nb active" id="nb-home" onclick="goPage('home')">
-    <div class="nb-pip"></div>
-    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    <span>Home</span>
+  <button class="nb on" id="nb-today">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    <span>Today</span>
   </button>
-  <button class="nb" id="nb-map" onclick="goPage('map')">
-    <div class="nb-pip"></div>
+  <button class="nb" id="nb-news">
+    <svg viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z"/><path d="M16 2v20"/><line x1="8" y1="7" x2="12" y2="7"/><line x1="8" y1="12" x2="12" y2="12"/></svg>
+    <span>News</span>
+  </button>
+  <button class="nb" id="nb-map">
     <svg viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
     <span>Map</span>
   </button>
-  <button class="nb" id="nb-calendar" onclick="goPage('calendar')">
-    <div class="nb-pip"></div>
-    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-    <span>Calendar</span>
+  <button class="nb" id="nb-weather">
+    <svg viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+    <span>Weather</span>
   </button>
-  <button class="nb" id="nb-trips" onclick="goPage('trips')">
-    <div class="nb-pip"></div>
-    <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.18 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.94-.94a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-    <span>Trips</span>
-  </button>
-  <button class="nb" id="nb-tasks" onclick="goPage('tasks')">
-    <div class="nb-pip"></div>
-    <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-    <span>Tasks</span>
+  <button class="nb" id="nb-connect">
+    <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+    <span>Connect</span>
   </button>
 </nav>
 
-</div><!-- /app -->
-
-<!-- MODAL -->
-<div class="mo" id="modal" onclick="closeMo(event)">
-  <div class="mo-box" onclick="event.stopPropagation()">
-    <div class="mo-handle"></div>
-    <div class="mo-title" id="mo-title"></div>
-    <div class="mo-desc" id="mo-desc"></div>
-    <button class="mo-p" id="mo-btn1" onclick="moAction()"></button>
-    <button class="mo-s" onclick="closeMo()">Close</button>
-  </div>
-</div>
+</div><!-- /shell -->
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// ── CONSTANTS ────────────────────────────────────────────────────
-const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
-const WMO={0:'Clear sky',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Foggy',48:'Icy fog',51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',71:'Light snow',73:'Snow',75:'Heavy snow',80:'Rain showers',81:'Heavy rain showers',82:'Violent showers',95:'Thunderstorm',99:'Thunderstorm'};
-const WICO={0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',48:'🌫',51:'🌦',53:'🌦',55:'🌧',61:'🌦',63:'🌧',65:'🌧',71:'🌨',73:'❄️',75:'❄️',80:'🌦',81:'🌧',82:'⛈',95:'⛈',99:'⛈'};
+'use strict';
+var DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+var SDAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var WMO = {0:'Clear sky',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Foggy',48:'Icy fog',51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',71:'Light snow',73:'Snow',75:'Heavy snow',80:'Rain showers',81:'Heavy showers',82:'Violent showers',95:'Thunderstorm',99:'Thunderstorm'};
+var WICO = {0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',48:'🌫',51:'🌦',53:'🌦',55:'🌧',61:'🌦',63:'🌧',65:'🌧',71:'🌨',73:'❄️',75:'❄️',80:'🌦',81:'🌧',82:'⛈',95:'⛈',99:'⛈'};
+var COLORS = ['#5b5bd6','#38bdf8','#f59e0b','#22c55e','#f43f5e','#14b8a6','#a78bfa'];
 
-// ── STATE ─────────────────────────────────────────────────────────
-let lat=54.6892,lon=25.2798,city='Vilnius',country='Lithuania';
-let mapInst=null,mapMark=null,mapInit=false;
-let weather=null;
-let tasks=JSON.parse(localStorage.getItem('ml_t')||'[]');
-let trips=JSON.parse(localStorage.getItem('ml_tr')||'[]');
-let events=JSON.parse(localStorage.getItem('ml_ev')||'[]');
-let calMonth=new Date().getMonth(),calYear=new Date().getFullYear();
-let moUrl='';
+var now = new Date();
+var H = now.getHours();
+var greet = H<5?'Good night':H<12?'Good morning':H<17?'Good afternoon':H<21?'Good evening':'Good night';
+var todayStr = now.toISOString().split('T')[0];
+var tmrStr = new Date(Date.now()+86400000).toISOString().split('T')[0];
 
-// ── DATE / GREETING ──────────────────────────────────────────────
-const now=new Date();
-const H=now.getHours();
-const greet=H<5?'Good night':H<12?'Good morning':H<17?'Good afternoon':H<21?'Good evening':'Good night';
-document.getElementById('hdr-date').textContent=DAYS[now.getDay()]+' · '+MONTHS[now.getMonth()]+' '+now.getDate()+', '+now.getFullYear();
-document.getElementById('hdr-greet').textContent=greet;
-document.getElementById('hero-greet').textContent=greet+' 👋';
-const todayStr=now.toISOString().split('T')[0];
-document.getElementById('t-date').value=todayStr;
-document.getElementById('ev-date').value=todayStr;
+document.getElementById('tb-date').textContent = DAYS[now.getDay()] + ' · ' + MONTHS[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
+document.getElementById('tb-greet').textContent = greet;
 
-// ── NAVIGATION ───────────────────────────────────────────────────
-function goPage(p){
-  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
-  document.querySelectorAll('.nb').forEach(x=>x.classList.remove('active'));
-  document.getElementById('pg-'+p).classList.add('active');
-  const nb=document.getElementById('nb-'+p);
-  if(nb)nb.classList.add('active');
-  document.getElementById('scroll').scrollTop=0;
-  if(p==='map'&&!mapInit){initMap();mapInit=true;}
-  if(p==='calendar')renderCal();
+var lat = null, lon = null, city = '', country = '', wxData = null;
+var mapInst = null, mapMark = null, mapInited = false;
+
+// NAV
+var pages = ['today','news','map','weather','connect'];
+pages.forEach(function(p) {
+  var btn = document.getElementById('nb-' + p);
+  if (btn) btn.addEventListener('click', function() { goPage(p); });
+});
+function goPage(p) {
+  document.querySelectorAll('.pg').forEach(function(x) { x.classList.remove('on'); });
+  document.querySelectorAll('.nb').forEach(function(x) { x.classList.remove('on'); });
+  var pg = document.getElementById('pg-' + p);
+  var nb = document.getElementById('nb-' + p);
+  if (pg) pg.classList.add('on');
+  if (nb) nb.classList.add('on');
+  if (p === 'map' && !mapInited) { setTimeout(initMap, 60); mapInited = true; }
 }
+document.getElementById('news-more-btn').addEventListener('click', function() { goPage('news'); });
 
-// ── GPS ──────────────────────────────────────────────────────────
-function getLocation(){
-  if(!navigator.geolocation){locFail();return;}
-  navigator.geolocation.getCurrentPosition(
-    p=>{lat=p.coords.latitude;lon=p.coords.longitude;geocode();loadWeather();},
-    _=>locFail(),{timeout:10000,maximumAge:300000}
-  );
+// GPS — no hardcoded default
+function getLocation() {
+  if (!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    lat = pos.coords.latitude;
+    lon = pos.coords.longitude;
+    geocode();
+    loadWeather();
+  }, function() {
+    loadNews('World news today');
+  }, { timeout:12000, maximumAge:300000 });
 }
-async function geocode(){
-  try{
-    const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
-    const d=await r.json();
-    city=d.address.city||d.address.town||d.address.village||d.address.county||'Unknown';
-    country=d.address.country||'';
+async function geocode() {
+  try {
+    var r = await fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json');
+    var d = await r.json();
+    city = d.address.city || d.address.town || d.address.village || d.address.county || 'Your City';
+    country = d.address.country || '';
     updateLocUI();
-    loadNews();
-  }catch(_){locFail();}
+    loadNews(city + ' ' + country);
+  } catch(e) { updateLocUI(); }
 }
-function locFail(){updateLocUI();loadWeather();loadNews();}
-function updateLocUI(){
-  const s=city+(country?', '+country:'');
-  document.getElementById('hdr-loc').textContent=s;
-  document.getElementById('hero-loc').textContent=s;
-  document.getElementById('w-city').textContent=city.toUpperCase();
-  document.getElementById('w2-city').textContent=city.toUpperCase();
-  document.getElementById('map-city').textContent=s;
-  document.getElementById('map-coords').textContent=lat.toFixed(5)+'°N, '+lon.toFixed(5)+'°E';
-  document.getElementById('news-local-t').textContent='News · '+city;
-  document.getElementById('home-news-title').textContent='News · '+city;
-  if(mapInst&&mapMark){mapInst.setView([lat,lon],14);mapMark.setLatLng([lat,lon]);}
+function updateLocUI() {
+  var s = city + (country ? ', ' + country : '');
+  document.getElementById('loc-text').textContent = city || 'GPS active';
+  document.getElementById('wx-city').textContent = (city || 'DETECTING').toUpperCase();
+  document.getElementById('wx2-city').textContent = (city || 'DETECTING').toUpperCase();
+  document.getElementById('lt-lbl').textContent = 'Local · ' + (city || 'World');
+  document.getElementById('mc-city').textContent = s || 'Your Location';
+  if (lat) document.getElementById('mc-coords').textContent = lat.toFixed(5) + '°N, ' + lon.toFixed(5) + '°E';
+  if (mapInst && mapMark) { mapInst.setView([lat,lon],14); mapMark.setLatLng([lat,lon]); }
 }
 
-// ── MAP ──────────────────────────────────────────────────────────
-function initMap(){
-  mapInst=L.map('leaflet-map',{zoomControl:false,attributionControl:false}).setView([lat,lon],14);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(mapInst);
-  const ico=L.divIcon({html:'<div style="width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,#7c5cfc,#5040ff);border:3px solid #fff;box-shadow:0 0 0 5px rgba(124,92,252,0.3)"></div>',iconSize:[18,18],iconAnchor:[9,9],className:''});
-  mapMark=L.marker([lat,lon],{icon:ico}).addTo(mapInst);
+// MAP
+function initMap() {
+  var clat = lat || 51.5, clon = lon || 0;
+  mapInst = L.map('lmap', {zoomControl:false, attributionControl:false}).setView([clat, clon], lat ? 14 : 4);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {maxZoom:19}).addTo(mapInst);
+  if (lat) {
+    var ico = L.divIcon({html:'<div style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#a5a5f5,#5b5bd6);border:3px solid #fff;box-shadow:0 0 0 8px rgba(91,91,214,.2)"></div>',iconSize:[22,22],iconAnchor:[11,11],className:''});
+    mapMark = L.marker([lat,lon],{icon:ico}).addTo(mapInst);
+  }
   L.control.zoom({position:'topright'}).addTo(mapInst);
 }
-function openMaps(){
-  const url=`maps://?ll=${lat},${lon}&q=${encodeURIComponent(city)}`;
-  window.location.href=url;
-  setTimeout(()=>{window.open(`https://maps.google.com/?q=${lat},${lon}`,'_blank');},1200);
-}
-function openApp(scheme,fallback){
-  window.location.href=scheme;
-  setTimeout(()=>{window.open(fallback,'_blank');},1200);
+document.getElementById('mc-open-btn').addEventListener('click', function() {
+  if (!lat) { alert('Location not available yet. Please allow location access.'); return; }
+  window.location.href = 'maps://?ll=' + lat + ',' + lon + '&q=' + encodeURIComponent(city || 'My Location');
+  setTimeout(function() { window.open('https://maps.google.com/?q=' + lat + ',' + lon, '_blank'); }, 1200);
+});
+function nativeOpen(scheme, fallback) {
+  if (scheme) window.location.href = scheme;
+  setTimeout(function() { window.open(fallback, '_blank'); }, 1200);
 }
 
-// ── WEATHER ──────────────────────────────────────────────────────
-async function loadWeather(){
-  try{
-    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weathercode,windspeed_10m,relativehumidity_2m,apparent_temperature,precipitation&daily=temperature_2m_max,temperature_2m_min,weathercode,precipitation_probability_max&timezone=auto&forecast_days=7`);
-    const d=await r.json();weather=d;
-    const c=d.current;
-    const t=Math.round(c.temperature_2m);
-    const f=Math.round(c.apparent_temperature);
-    const cd=WMO[c.weathercode]||'Clear';
-    const ic=WICO[c.weathercode]||'🌡';
-    const w=Math.round(c.windspeed_10m);
-    const hu=c.relativehumidity_2m;
-    const pills=`<div class="wp" style="background:var(--bluebg);color:var(--blue)">💨 ${w} km/h</div><div class="wp" style="background:var(--tealbg);color:var(--teal)">💧 ${hu}%</div><div class="wp" style="background:var(--amberbg);color:var(--amber)">🌡 Feels ${f}°C</div>`;
-    // Home
-    document.getElementById('w-temp').textContent=t;
-    document.getElementById('w-cond-text').textContent=cd;
-    document.getElementById('w-big-icon').textContent=ic;
-    document.getElementById('w-pills').innerHTML=pills;
-    // Weather page
-    document.getElementById('w2-temp').textContent=t;
-    document.getElementById('w2-cond').textContent=ic+'  '+cd;
-    document.getElementById('w2-icon').textContent=ic;
-    document.getElementById('w2-pills').innerHTML=pills;
-    document.getElementById('w-updated').textContent='Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-    // Forecast
-    const dy=d.daily;
-    document.getElementById('forecast').innerHTML=Array.from({length:7},(_,i)=>{
-      const dt=new Date(dy.time[i]+'T12:00:00');
-      const dn=i===0?'Today':i===1?'Tomorrow':DAYS[dt.getDay()];
-      const mx=Math.round(dy.temperature_2m_max[i]);
-      const mn=Math.round(dy.temperature_2m_min[i]);
-      const wi=WICO[dy.weathercode[i]]||'🌡';
-      const pr=dy.precipitation_probability_max[i];
-      return`<div class="fc-row"><div class="fc-day">${dn}</div><div class="fc-ico">${wi}</div><div class="fc-prec">${pr>20?'💧 '+pr+'%':''}</div><div class="fc-temps">${mx}° <span style="color:var(--text3)">${mn}°</span></div></div>`;
+// WEATHER
+async function loadWeather() {
+  if (!lat) return;
+  try {
+    var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,weathercode,windspeed_10m,relativehumidity_2m,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,weathercode,precipitation_probability_max&timezone=auto&forecast_days=7';
+    var r = await fetch(url);
+    var d = await r.json();
+    wxData = d;
+    var c = d.current;
+    var t = Math.round(c.temperature_2m), fe = Math.round(c.apparent_temperature);
+    var cd = WMO[c.weathercode] || 'Clear', ic = WICO[c.weathercode] || '🌡';
+    var w = Math.round(c.windspeed_10m), hu = c.relativehumidity_2m;
+    var pills = '<span class="wxp" style="background:rgba(56,189,248,.1);color:#38bdf8">💨 ' + w + ' km/h</span><span class="wxp" style="background:rgba(20,184,166,.1);color:#14b8a6">💧 ' + hu + '%</span><span class="wxp" style="background:rgba(245,158,11,.1);color:#f59e0b">🌡 Feels ' + fe + '°C</span>';
+    ['','2'].forEach(function(s) {
+      document.getElementById('wx' + s + '-num').textContent = t;
+      document.getElementById('wx' + s + '-cond').textContent = ic + '  ' + cd;
+      document.getElementById('wx' + s + '-emoji').textContent = ic;
+      document.getElementById('wx' + s + '-pills').innerHTML = pills;
+    });
+    var dy = d.daily;
+    document.getElementById('wx-strip').innerHTML = Array.from({length:7}, function(_,i) {
+      var dt = new Date(dy.time[i] + 'T12:00:00');
+      return '<div class="wfd' + (i===0?' tod':'') + '"><div class="wfd-d">' + (i===0?'NOW':SDAYS[dt.getDay()]) + '</div><div class="wfd-i">' + (WICO[dy.weathercode[i]]||'🌡') + '</div><div class="wfd-h">' + Math.round(dy.temperature_2m_max[i]) + '°</div><div class="wfd-l">' + Math.round(dy.temperature_2m_min[i]) + '°</div></div>';
     }).join('');
-    buildSummary();
-  }catch(_){document.getElementById('w-cond-text').textContent='Tap refresh';}
+    document.getElementById('forecast').innerHTML = Array.from({length:7}, function(_,i) {
+      var dt = new Date(dy.time[i] + 'T12:00:00');
+      var dn = i===0?'Today':i===1?'Tomorrow':DAYS[dt.getDay()];
+      var pr = dy.precipitation_probability_max[i];
+      return '<div style="display:flex;align-items:center;padding:13px 0;border-bottom:.5px solid var(--line)"><div style="width:86px;font-size:13px;font-weight:500">' + dn + '</div><div style="font-size:20px;margin-right:10px">' + (WICO[dy.weathercode[i]]||'🌡') + '</div><div style="flex:1;font-size:11px;color:var(--t3)">' + (pr>20?'💧 '+pr+'%':'') + '</div><div style="font-size:14px;font-weight:600">' + Math.round(dy.temperature_2m_max[i]) + '° <span style="color:var(--t3)">' + Math.round(dy.temperature_2m_min[i]) + '°</span></div></div>';
+    }).join('');
+  } catch(e) {}
 }
 
-// ── SUMMARY ───────────────────────────────────────────────────────
-function fmt12(t){if(!t)return'';const[h,m]=t.split(':');const hh=parseInt(h);return(hh%12||12)+':'+m+(hh>=12?'pm':'am');}
-function buildSummary(){
-  const items=[];
-  if(weather){
-    const c=weather.current;
-    const t=Math.round(c.temperature_2m);
-    const cd=WMO[c.weathercode]||'clear';
-    const ic=WICO[c.weathercode]||'🌡';
-    items.push({i:ic,t:`<strong>${t}°C and ${cd.toLowerCase()}</strong> in ${city} right now.`});
+// AI BRIEF
+async function loadAI(force) {
+  var KEY = 'ml_ai_' + todayStr, KT = 'ml_ai_t_' + todayStr;
+  if (!force) {
+    var c = localStorage.getItem(KEY), ct = localStorage.getItem(KT);
+    if (c && ct && Date.now() - parseInt(ct) < 3600000) {
+      document.getElementById('ai-body').innerHTML = '<p class="ai-text">' + c + '</p>';
+      document.getElementById('ai-ts').textContent = 'Updated ' + new Date(parseInt(ct)).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+      return;
+    }
   }
-  const td=now.toISOString().split('T')[0];
-  const tmr=new Date(Date.now()+86400000).toISOString().split('T')[0];
-  [...trips,...events].filter(x=>x.date>=td).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,3).forEach(x=>{
-    const isToday=x.date===td,isTmr=x.date===tmr;
-    const when=isToday?(x.time?'today at '+fmt12(x.time):'today'):isTmr?'tomorrow':'on '+new Date(x.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    const ico={flight:'✈️',hotel:'🏨',event:'🎫',trip:'🌍'}[x.type]||'📌';
-    items.push({i:ico,t:`<strong>${x.name||x.title}</strong> ${when}.${x.notes?' '+x.notes:''}`});
-  });
-  const a=tasks.filter(x=>!x.done);
-  if(a.length)items.push({i:'✅',t:`You have <strong>${a.length} task${a.length!==1?'s':''}</strong> pending.`});
-  else if(tasks.length)items.push({i:'🎉',t:'All tasks complete!'});
-  if(!items.length)items.push({i:'👋',t:`Welcome to MyLife. Add tasks and trips to see your daily summary here.`});
-  document.getElementById('hero-items').innerHTML=items.map(x=>`<div class="hero-item"><div class="hero-icon">${x.i}</div><div class="hero-text">${x.t}</div></div>`).join('');
+  document.getElementById('ai-body').innerHTML = '<div><div class="shim w90"></div><div class="shim w75"></div><div class="shim w60"></div></div>';
+  var btn = document.getElementById('ai-regen-btn');
+  btn.textContent = 'Thinking...'; btn.disabled = true;
+  var loc = city ? (city + (country ? ', ' + country : '')) : 'an unknown location';
+  var wStr = wxData ? 'It is ' + Math.round(wxData.current.temperature_2m) + '°C and ' + (WMO[wxData.current.weathercode]||'clear') + ', wind ' + Math.round(wxData.current.windspeed_10m) + ' km/h, feels like ' + Math.round(wxData.current.apparent_temperature) + '°C' : 'weather not available';
+  var ghUser = localStorage.getItem('gh_user') || '';
+  var ghStr = ghUser ? 'GitHub username: ' + ghUser + ' (check their recent commit activity)' : 'No GitHub connected';
+  var prompt = 'You are a personal AI assistant. Write a 2-3 sentence daily brief for someone in ' + loc + '. Today is ' + now.toDateString() + ', ' + greet.toLowerCase() + '.
+
+Weather: ' + wStr + '
+GitHub: ' + ghStr + '
+
+Search for: 1) today's top news from ' + loc + ', 2) if GitHub username provided, their recent commit activity.
+
+Write warmly and personally. Give a practical weather clothing tip. If GitHub connected, summarize their coding activity ("you pushed X commits to Y today"). Include one local news highlight. Use <strong> tags for key facts. 2-3 sentences maximum, plain flowing text, no bullets.';
+  try {
+    var res = await fetch('https://api.anthropic.com/v1/messages', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({model:'claude-sonnet-4-20250514', max_tokens:300, messages:[{role:'user',content:prompt}], tools:[{type:'web_search_20250305',name:'web_search'}]})});
+    var data = await res.json();
+    var text = data.content.filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('').trim();
+    localStorage.setItem(KEY, text); localStorage.setItem(KT, String(Date.now()));
+    document.getElementById('ai-body').innerHTML = '<p class="ai-text">' + text + '</p>';
+    document.getElementById('ai-ts').textContent = 'Updated ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  } catch(e) {
+    document.getElementById('ai-body').innerHTML = '<p class="ai-text" style="color:var(--t3)">Could not load brief. Check connection and tap Regenerate.</p>';
+  }
+  btn.textContent = 'Regenerate'; btn.disabled = false;
+}
+document.getElementById('ai-regen-btn').addEventListener('click', function() { loadAI(true); });
+
+// GITHUB
+async function loadGitHub() {
+  var username = localStorage.getItem('gh_user');
+  var el = document.getElementById('gh-content');
+  if (!username) {
+    el.innerHTML = '<div class="gh-connect"><div class="gh-connect-t">Connect GitHub</div><div class="gh-connect-s">Enter your username to see today's commits, pull requests and project activity.</div><div class="gh-inp-row"><input class="gh-inp" id="gh-inp-main" placeholder="your-username"><button class="gh-save" id="gh-save-main">Save</button></div></div>';
+    document.getElementById('gh-save-main').addEventListener('click', function() {
+      var v = document.getElementById('gh-inp-main').value.trim();
+      if (!v) return;
+      localStorage.setItem('gh_user', v);
+      loadGitHub();
+    });
+    document.getElementById('gh-inp-main').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { document.getElementById('gh-save-main').click(); }
+    });
+    return;
+  }
+  el.innerHTML = '<div><div class="shim w90"></div><div class="shim w70"></div></div>';
+  try {
+    var [evRes, userRes] = await Promise.all([
+      fetch('https://api.github.com/users/' + username + '/events?per_page=50'),
+      fetch('https://api.github.com/users/' + username)
+    ]);
+    var events = await evRes.json();
+    var user = await userRes.json();
+    if (!Array.isArray(events)) throw new Error('Invalid response');
+    var todayEvents = events.filter(function(e) { return e.created_at && e.created_at.startsWith(todayStr); });
+    var commits = 0, repos = {}, prs = 0, creates = 0;
+    todayEvents.forEach(function(e) {
+      if (e.type === 'PushEvent' && e.payload && e.payload.commits) {
+        commits += e.payload.commits.length;
+        var rname = e.repo.name.split('/')[1];
+        if (!repos[rname]) repos[rname] = [];
+        e.payload.commits.forEach(function(cm) { repos[rname].push(cm.message.split('\n')[0].substring(0,70)); });
+      }
+      if (e.type === 'PullRequestEvent') prs++;
+      if (e.type === 'CreateEvent') creates++;
+    });
+    var avatarUrl = user.avatar_url || '';
+    var html = '<div class="gh-header"><div class="gh-avatar">' + (avatarUrl ? '<img src="' + avatarUrl + '" alt="avatar">' : '🐙') + '</div><div><div class="gh-name">@' + username + '</div><div class="gh-sub">' + (user.public_repos||0) + ' repos · ' + (user.followers||0) + ' followers</div></div></div>';
+    if (commits > 0) {
+      html += '<div class="gh-commit-list">';
+      Object.keys(repos).forEach(function(repo) {
+        repos[repo].slice(0,3).forEach(function(msg) {
+          html += '<div class="gh-commit"><div class="gh-commit-dot"></div><div class="gh-commit-body"><div class="gh-commit-repo">' + repo + '</div><div class="gh-commit-msg">' + msg + '</div></div></div>';
+        });
+      });
+      html += '</div>';
+      html += '<div class="gh-stat-row"><div class="gh-stat"><div class="gh-stat-n" style="color:var(--grn)">' + commits + '</div><div class="gh-stat-l">Commits</div></div>' + (prs>0?'<div class="gh-stat"><div class="gh-stat-n" style="color:var(--ind3)">' + prs + '</div><div class="gh-stat-l">PRs</div></div>':'') + '<div class="gh-stat"><div class="gh-stat-n" style="color:var(--amb)">' + Object.keys(repos).length + '</div><div class="gh-stat-l">Repos</div></div></div>';
+    } else {
+      html += '<div style="font-size:13px;color:var(--t3);padding:12px 0">No commits yet today. Recent repos: <strong style="color:var(--t2)">' + (user.public_repos||0) + '</strong></div>';
+      var recentEvts = events.slice(0,3);
+      if (recentEvts.length) {
+        html += '<div class="gh-commit-list">';
+        recentEvts.forEach(function(e) {
+          if (e.type === 'PushEvent' && e.payload && e.payload.commits && e.payload.commits.length) {
+            var rname = e.repo.name.split('/')[1];
+            html += '<div class="gh-commit"><div class="gh-commit-dot" style="background:var(--t3)"></div><div class="gh-commit-body"><div class="gh-commit-repo">' + rname + '</div><div class="gh-commit-msg">' + e.payload.commits[0].message.split('\n')[0].substring(0,70) + '</div><div class="gh-commit-time">Recent</div></div></div>';
+          }
+        });
+        html += '</div>';
+      }
+    }
+    el.innerHTML = html;
+  } catch(e) {
+    el.innerHTML = '<div style="font-size:13px;color:var(--t3);padding:12px 0">Could not load GitHub data. Check username or connection.</div>';
+  }
+}
+document.getElementById('gh-settings-btn').addEventListener('click', function() { goPage('connect'); });
+
+// GitHub connect page
+document.getElementById('gh-save-connect').addEventListener('click', function() {
+  var v = document.getElementById('gh-inp-connect').value.trim();
+  if (!v) return;
+  localStorage.setItem('gh_user', v);
+  document.getElementById('gh-inp-connect').value = '';
+  loadGitHub();
+  goPage('today');
+});
+document.getElementById('gh-inp-connect').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') document.getElementById('gh-save-connect').click();
+});
+
+// Pre-fill github input if already set
+var savedGh = localStorage.getItem('gh_user');
+if (savedGh) document.getElementById('gh-inp-connect').value = savedGh;
+
+// FLIGHTS section
+function renderFlights() {
+  var el = document.getElementById('flights-section');
+  el.innerHTML = '<div class="connect-card"><div class="cc-top"><div class="cc-ico" style="background:linear-gradient(135deg,#0f3460,#4facfe)">✈️</div><div><div class="cc-name">Auto-detect Flights</div><div class="cc-sub">From email confirmations</div></div></div><div class="cc-desc">Connect Gmail to automatically detect flights, hotels and travel bookings. MyLife reads confirmation emails and shows your trips here — no manual entry needed.</div><button class="cc-btn" id="flights-connect-btn">Connect Gmail →</button></div>';
+  document.getElementById('flights-connect-btn').addEventListener('click', function() { goPage('connect'); });
 }
 
-// ── NEWS ──────────────────────────────────────────────────────────
-async function fetchRSS(url){
-  const r=await fetch('https://api.allorigins.win/get?url='+encodeURIComponent(url));
-  return new DOMParser().parseFromString((await r.json()).contents,'text/xml');
+// ACTIVITY STATS (placeholder — requires native app for real Apple Health data)
+function initStats() {
+  document.getElementById('stat-steps').textContent = '—';
+  document.getElementById('stat-km').textContent = '—';
+  document.getElementById('stat-cal').textContent = '—';
 }
-function renderNews(items,id,limit){
-  const el=document.getElementById(id);
-  const rows=items.slice(0,limit||6);
-  if(!rows.length){el.innerHTML='<div style="padding:12px 16px;font-size:13px;color:var(--text3)">Nothing loaded.</div>';return;}
-  el.innerHTML=rows.map(item=>{
-    const hl=(item.querySelector('title')?.textContent||'').replace(/<[^>]*>/g,'');
-    const link=item.querySelector('link')?.textContent||'#';
-    const src=item.querySelector('source')?.textContent||'';
-    return`<a class="ni" href="${link}" target="_blank"><div class="ni-top"><div class="ni-hl">${hl.substring(0,130)}</div><div class="ni-arr">›</div></div>${src?`<div class="ni-src">${src}</div>`:''}</a>`;
+document.getElementById('health-connect-btn').addEventListener('click', function() { goPage('connect'); });
+
+// GMAIL CONNECT
+document.getElementById('gmail-btn').addEventListener('click', function() {
+  alert('Gmail connection requires a backend server for secure OAuth. This feature is coming in the native app. For now, you can open Gmail directly from the Today page.');
+});
+document.getElementById('gcal-btn').addEventListener('click', function() {
+  nativeOpen('calshow://', 'https://calendar.google.com');
+});
+
+// NEWS
+async function fetchRSS(url) {
+  var r = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(url));
+  return new DOMParser().parseFromString((await r.json()).contents, 'text/xml');
+}
+function renderNews(items, id, limit) {
+  var el = document.getElementById(id);
+  if (!items || !items.length) { el.innerHTML = '<div style="padding:16px 0;font-size:13px;color:var(--t3)">Nothing loaded yet.</div>'; return; }
+  el.innerHTML = items.slice(0, limit||6).map(function(item, i) {
+    var hl = (item.querySelector('title')?.textContent || '').replace(/<[^>]*>/g,'');
+    var link = item.querySelector('link')?.textContent || '#';
+    var src = item.querySelector('source')?.textContent || '';
+    var color = COLORS[i % COLORS.length];
+    return '<a class="ni" href="' + link + '" target="_blank"><div class="ni-row"><div class="ni-bar" style="background:' + color + '"></div><div class="ni-b"><div class="ni-src">' + src + '</div><div class="ni-hl">' + hl.substring(0,130) + '</div><div class="ni-more" style="color:' + color + '">Read more ›</div></div></div></a>';
   }).join('');
 }
-async function loadNews(){
-  const q=encodeURIComponent(city+' '+country);
-  try{
-    const[loc,world,biz]=await Promise.allSettled([
-      fetchRSS(`https://news.google.com/rss/search?q=${q}&hl=en&gl=US&ceid=US:en`),
+async function loadNews(query) {
+  var q = encodeURIComponent(query || 'World news');
+  try {
+    var results = await Promise.allSettled([
+      fetchRSS('https://news.google.com/rss/search?q=' + q + '&hl=en&gl=US&ceid=US:en'),
       fetchRSS('https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en'),
       fetchRSS('https://news.google.com/rss/search?q=business+technology&hl=en&gl=US&ceid=US:en')
     ]);
-    if(loc.status==='fulfilled'){const its=[...loc.value.querySelectorAll('item')];renderNews(its,'lt-news',6);renderNews(its,'home-news-list',3);}
-    if(world.status==='fulfilled')renderNews([...world.value.querySelectorAll('item')],'world-news',6);
-    if(biz.status==='fulfilled')renderNews([...biz.value.querySelectorAll('item')],'biz-news',4);
-    document.getElementById('news-time').textContent='Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-  }catch(_){}
+    var lItems = results[0].status==='fulfilled' ? [...results[0].value.querySelectorAll('item')] : [];
+    var wItems = results[1].status==='fulfilled' ? [...results[1].value.querySelectorAll('item')] : [];
+    var bItems = results[2].status==='fulfilled' ? [...results[2].value.querySelectorAll('item')] : [];
+    var homeItems = lItems.length ? lItems : wItems;
+    renderNews(homeItems, 'home-news', 3);
+    renderNews(lItems, 'lt-news', 8);
+    renderNews(wItems, 'world-news', 8);
+    renderNews(bItems, 'biz-news', 6);
+  } catch(e) {}
 }
 
-// ── CALENDAR ─────────────────────────────────────────────────────
-function renderCal(){
-  const MNAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
-  document.getElementById('cal-month-title').textContent=MNAMES[calMonth]+' '+calYear;
-  const first=new Date(calYear,calMonth,1).getDay();
-  const days=new Date(calYear,calMonth+1,0).getDate();
-  const prevDays=new Date(calYear,calMonth,0).getDate();
-  const todayN=now.getDate(),todayM=now.getMonth(),todayY=now.getFullYear();
-  const tripDates=new Set([...trips,...events].map(x=>x.date));
-  let html='';
-  ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(d=>{html+=`<div class="cal-dayname">${d}</div>`;});
-  for(let i=0;i<first;i++){html+=`<div class="cal-day other-month">${prevDays-first+1+i}</div>`;}
-  for(let d=1;d<=days;d++){
-    const ds=calYear+'-'+(String(calMonth+1).padStart(2,'0'))+'-'+(String(d).padStart(2,'0'));
-    const isT=d===todayN&&calMonth===todayM&&calYear===todayY;
-    const hasTr=tripDates.has(ds);
-    html+=`<div class="cal-day${isT?' today':''}${hasTr?' has-trip':''}">${d}</div>`;
-  }
-  const rem=(7-(first+days)%7)%7;
-  for(let i=1;i<=rem;i++){html+=`<div class="cal-day other-month">${i}</div>`;}
-  document.getElementById('cal-grid').innerHTML=html;
-  // Events list
-  const upcoming=[...trips,...events].filter(x=>x.date>=todayStr).sort((a,b)=>a.date.localeCompare(b.date));
-  const evEl=document.getElementById('events-list');
-  if(!upcoming.length){evEl.innerHTML='<div class="empty"><div class="empty-ico">📅</div><div class="empty-t">No upcoming events</div><div class="empty-s">Add trips or events and they appear here</div></div>';return;}
-  evEl.innerHTML=upcoming.slice(0,8).map(x=>{
-    const dt=new Date(x.date+'T12:00:00');
-    const ico={flight:'✈️',hotel:'🏨',event:'🎫',trip:'🌍'}[x.type]||'📌';
-    return`<div class="trip" style="margin:0 0 8px"><button class="trip-del" onclick="deleteEvent('${x.id}')">×</button><div class="trip-type">${ico}</div><div class="trip-title">${x.name||x.title}</div><div class="trip-meta">${dt.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}${x.time?' · '+fmt12(x.time):''}${x.notes?' · '+x.notes:''}</div></div>`;
-  }).join('');
-}
-function changeMonth(d){calMonth+=d;if(calMonth>11){calMonth=0;calYear++;}else if(calMonth<0){calMonth=11;calYear--;}renderCal();}
-function addEvent(){
-  const n=document.getElementById('ev-name').value.trim();
-  const dt=document.getElementById('ev-date').value;
-  if(!n||!dt){alert('Enter name and date');return;}
-  events.push({id:'e'+Date.now(),name:n,date:dt,time:document.getElementById('ev-time').value,type:'event'});
-  localStorage.setItem('ml_ev',JSON.stringify(events));
-  document.getElementById('ev-name').value='';
-  renderCal();buildSummary();
-}
-function deleteEvent(id){
-  trips=trips.filter(x=>String(x.id)!==id);events=events.filter(x=>x.id!==id);
-  localStorage.setItem('ml_tr',JSON.stringify(trips));
-  localStorage.setItem('ml_ev',JSON.stringify(events));
-  renderCal();renderTrips();buildSummary();
-}
-
-// ── TRIPS ─────────────────────────────────────────────────────────
-function saveTrip(){
-  const tt=document.getElementById('t-title').value.trim();
-  const dt=document.getElementById('t-date').value;
-  if(!tt||!dt){alert('Enter title and date');return;}
-  trips.push({id:Date.now(),type:document.getElementById('t-type').value,title:tt,date:dt,time:document.getElementById('t-time').value,notes:document.getElementById('t-notes').value.trim()});
-  trips.sort((a,b)=>a.date.localeCompare(b.date));
-  localStorage.setItem('ml_tr',JSON.stringify(trips));
-  document.getElementById('t-title').value='';document.getElementById('t-time').value='';document.getElementById('t-notes').value='';
-  renderTrips();buildSummary();
-}
-function renderTrips(){
-  const el=document.getElementById('trips-list');
-  if(!trips.length){el.innerHTML='<div class="empty"><div class="empty-ico">✈️</div><div class="empty-t">No trips yet</div><div class="empty-s">Add a flight, hotel, or event and it appears in your daily summary automatically</div></div>';return;}
-  const td=now.toISOString().split('T')[0];
-  const tmr=new Date(Date.now()+86400000).toISOString().split('T')[0];
-  el.innerHTML=trips.map(x=>{
-    const dt=new Date(x.date+'T12:00:00');
-    const isT=x.date===td,isPast=x.date<td,isTmr=x.date===tmr;
-    const badge=isT?'<span class="trip-badge tb-today">TODAY</span>':isTmr?'<span class="trip-badge tb-tmr">TOMORROW</span>':isPast?'<span class="trip-badge tb-past">PAST</span>':'<span class="trip-badge tb-upcoming">'+dt.toLocaleDateString('en-US',{month:'short',day:'numeric'})+'</span>';
-    const ico={flight:'✈️',hotel:'🏨',event:'🎫',trip:'🌍'}[x.type]||'📌';
-    return`<div class="trip" style="${isPast?'opacity:.5':''}"><button class="trip-del" onclick="deleteTrip(${x.id})" aria-label="Delete">×</button><div class="trip-type">${ico}</div><div class="trip-title">${x.title} ${badge}</div><div class="trip-meta">${dt.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}${x.time?' · '+fmt12(x.time):''}${x.notes?' · '+x.notes:''}</div></div>`;
-  }).join('');
-}
-function deleteTrip(id){trips=trips.filter(x=>x.id!==id);localStorage.setItem('ml_tr',JSON.stringify(trips));renderTrips();buildSummary();}
-
-// ── TASKS ─────────────────────────────────────────────────────────
-function saveT(){localStorage.setItem('ml_t',JSON.stringify(tasks));}
-function renderTasks(){
-  const a=tasks.filter(x=>!x.done);
-  document.getElementById('task-count').textContent=a.length+' task'+(a.length!==1?'s':'')+' remaining';
-  const el=document.getElementById('task-list');
-  if(!tasks.length){el.innerHTML='<div class="empty"><div class="empty-ico">✅</div><div class="empty-t">No tasks yet</div><div class="empty-s">Type below to add your first task</div></div>';}
-  else el.innerHTML=tasks.map((t,i)=>`<div class="task-item"><button class="tchk ${t.done?'done':''}" onclick="tog(${i})" aria-label="Toggle"></button><div class="ttxt ${t.done?'done':''}" onclick="tog(${i})">${t.text}</div><button class="tdel" onclick="del(${i})" aria-label="Delete">&times;</button></div>`).join('');
-  const home=document.getElementById('home-tasks');
-  const show=a.slice(0,3);
-  if(!show.length)home.innerHTML=tasks.length?'<div style="color:var(--green);font-size:13px;padding-top:4px">All done! 🎉</div>':'<div style="font-size:13px;color:var(--text3)">No tasks yet — tap Tasks to add some</div>';
-  else home.innerHTML=show.map(t=>`<div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;font-size:13px;color:var(--text2)"><div style="width:7px;height:7px;border-radius:50%;background:var(--purple2);flex-shrink:0"></div>${t.text}</div>`).join('')+(a.length>3?`<div style="font-size:11px;color:var(--text3)">+${a.length-3} more</div>`:'');
-}
-function addTask(){const inp=document.getElementById('task-inp');const v=inp.value.trim();if(!v)return;tasks.unshift({text:v,done:false});saveT();renderTasks();buildSummary();inp.value='';}
-function quickTask(t){tasks.unshift({text:t,done:false});saveT();renderTasks();goPage('tasks');}
-function tog(i){tasks[i].done=!tasks[i].done;saveT();renderTasks();buildSummary();}
-function del(i){tasks.splice(i,1);saveT();renderTasks();buildSummary();}
-
-// ── MODAL ─────────────────────────────────────────────────────────
-function closeMo(e){if(!e||e.target===document.getElementById('modal'))document.getElementById('modal').classList.remove('open');}
-function moAction(){window.location.href=moUrl;closeMo();}
-
-// ── REFRESH ──────────────────────────────────────────────────────
-async function refreshAll(){
-  const btn=document.getElementById('rbtn');
-  btn.querySelector('svg').classList.add('rspin');btn.disabled=true;
+// REFRESH
+document.getElementById('rbtn').addEventListener('click', function() {
+  var svg = this.querySelector('svg');
+  svg.classList.add('rspin'); this.disabled = true;
   getLocation();
-  await Promise.allSettled([loadWeather(),loadNews()]);
-  btn.querySelector('svg').classList.remove('rspin');btn.disabled=false;
-}
-
-// ── KEYBOARD ─────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded',()=>{
-  document.getElementById('task-inp').addEventListener('keydown',e=>{if(e.key==='Enter')addTask();});
+  Promise.allSettled([loadWeather(), loadAI(true), loadGitHub()]).then(function() {
+    svg.classList.remove('rspin');
+    document.getElementById('rbtn').disabled = false;
+  });
 });
 
-// ── INIT ─────────────────────────────────────────────────────────
-renderTasks();renderTrips();buildSummary();
+// INIT
+initStats();
+renderFlights();
 getLocation();
+loadGitHub();
+loadAI(false);
 </script>
 </body>
 </html>
