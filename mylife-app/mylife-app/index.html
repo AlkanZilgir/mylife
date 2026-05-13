@@ -2,889 +2,774 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="MyLife">
-<meta name="theme-color" content="#080b14">
-<title>MyLife</title>
-<link rel="manifest" href="data:application/json,%7B%22name%22%3A%22MyLife%22%2C%22short_name%22%3A%22MyLife%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23080b14%22%2C%22theme_color%22%3A%22%23080b14%22%7D">
+<meta name="theme-color" content="#f5f3ff">
+<link rel="manifest" href="data:application/json,%7B%22name%22%3A%22MyLife%22%2C%22short_name%22%3A%22MyLife%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f5f3ff%22%2C%22theme_color%22%3A%22%23f5f3ff%22%7D">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<title>MyLife</title>
 <style>
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-:root {
-  --bg: #080b14;
-  --s1: #0c1020;
-  --s2: #111528;
-  --s3: #181e38;
-  --line: rgba(255,255,255,0.06);
-  --line2: rgba(255,255,255,0.11);
-  --t1: #ececf4;
-  --t2: #8b8b9e;
-  --t3: #3d3d55;
-  --ind: #5b5bd6;
-  --ind2: #7c7ce8;
-  --ind3: #a5a5f5;
-  --grn: #22c55e;
-  --blue: #38bdf8;
-  --amb: #f59e0b;
-  --rose: #f43f5e;
-  --teal: #14b8a6;
-  --st: env(safe-area-inset-top, 0px);
-  --sb: env(safe-area-inset-bottom, 0px);
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#f5f3ff;--s1:#ffffff;--s2:#f0eeff;--s3:#ebe8ff;
+  --b1:rgba(99,102,241,0.08);--b2:rgba(99,102,241,0.16);
+  --t1:#1e1b4b;--t2:#6b7280;--t3:#a0a3b1;
+  --ind:#6366f1;--ind2:#818cf8;--ind3:#c7d2fe;
+  --grn:#10b981;--blue:#3b82f6;--amb:#f59e0b;
+  --rose:#ef4444;--teal:#14b8a6;--pink:#ec4899;
 }
-html, body { height:100%; background:var(--bg); color:var(--t1); font-family:'Inter',sans-serif; overflow:hidden; -webkit-font-smoothing:antialiased; }
-::-webkit-scrollbar { display:none; }
+html{height:100%;height:-webkit-fill-available}
+body{height:100%;height:-webkit-fill-available;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);color:var(--t1);font-family:'Inter',-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{display:none}
 
-/* SHELL */
-#shell { position:fixed; inset:0; display:flex; flex-direction:column; }
+/* SPLASH */
+#splash{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:linear-gradient(160deg,#6366f1 0%,#8b5cf6 50%,#ec4899 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;animation:spOut 0.7s ease 2.2s both;pointer-events:none}
+@keyframes spOut{to{opacity:0;transform:translateY(-20px);visibility:hidden}}
+.sp-logo{animation:spIn 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.2s both}
+@keyframes spIn{from{transform:scale(0.3);opacity:0}to{transform:scale(1);opacity:1}}
+.sp-name{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:#fff;letter-spacing:-.5px;animation:spUp 0.5s ease 0.8s both}
+.sp-tag{font-size:13px;color:rgba(255,255,255,.65);animation:spUp 0.5s ease 1.1s both}
+@keyframes spUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.spr{animation:draw 1s ease 0.1s both;stroke-dasharray:188;stroke-dashoffset:188}
+@keyframes draw{to{stroke-dashoffset:0}}
+.spm{animation:draw 0.7s ease 0.8s both;stroke-dasharray:90;stroke-dashoffset:90}
+.spd{animation:pop 0.4s cubic-bezier(0.34,1.56,0.64,1) 1.3s both;r:0}
+@keyframes pop{to{r:4}}
 
 /* TOPBAR */
-#topbar {
-  flex-shrink:0;
-  padding: calc(var(--st) + 14px) 20px 12px;
-  background: rgba(8,11,20,0.9);
-  backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
-  border-bottom: 0.5px solid var(--line);
-  display: flex; align-items: center; justify-content: space-between; gap:12px;
-  z-index: 200;
-}
-.logo-mark { display:flex; align-items:center; gap:9px; flex-shrink:0; }
-.logo-svg { display:block; }
-.logo-word { font-family:'Syne',sans-serif; font-size:17px; font-weight:800; letter-spacing:-.4px; background:linear-gradient(135deg,#ececf4,#a5a5f5); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-.topbar-center { flex:1; text-align:center; }
-.tb-date { font-size:10px; font-weight:600; color:var(--t3); letter-spacing:.09em; text-transform:uppercase; }
-.tb-greet { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; color:var(--t1); margin-top:1px; }
-.topbar-right { display:flex; align-items:center; gap:8px; flex-shrink:0; }
-.loc-chip { display:flex; align-items:center; gap:5px; background:var(--s2); border:.5px solid var(--line2); border-radius:20px; padding:5px 10px 5px 7px; }
-.loc-dot { width:6px; height:6px; border-radius:50%; background:var(--grn); box-shadow:0 0 0 0 rgba(34,197,94,.5); animation:locpulse 2.5s infinite; flex-shrink:0; }
-@keyframes locpulse { 0%{box-shadow:0 0 0 0 rgba(34,197,94,.5)} 70%{box-shadow:0 0 0 6px rgba(34,197,94,0)} 100%{box-shadow:0 0 0 0 rgba(34,197,94,0)} }
-.loc-text { font-size:11px; font-weight:500; color:var(--ind3); max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.icon-btn { width:34px; height:34px; border-radius:50%; background:var(--s2); border:.5px solid var(--line2); color:var(--t2); cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.icon-btn:active { opacity:.6; }
-.icon-btn svg { width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
-.rspin { animation:spin .8s linear infinite; }
-@keyframes spin { to{transform:rotate(360deg)} }
+#topbar{flex-shrink:0;padding-top:env(safe-area-inset-top,0px);background:rgba(245,243,255,0.94);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);border-bottom:1px solid var(--b1)}
+.tbr{height:54px;display:flex;align-items:center;padding:0 16px;gap:10px}
+.logo{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.logo-txt{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--ind)}
+.tbc{flex:1;text-align:center;min-width:0;overflow:hidden}
+.tbd{font-size:10px;font-weight:600;color:var(--t3);letter-spacing:.09em;text-transform:uppercase}
+.tbg{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tbri{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.loc-c{display:flex;align-items:center;gap:4px;background:var(--s3);border:1px solid var(--b2);border-radius:20px;padding:5px 9px 5px 7px;max-width:96px}
+.ldot{width:6px;height:6px;border-radius:50%;background:var(--grn);flex-shrink:0;animation:pulse 2.5s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.5)}60%{box-shadow:0 0 0 5px rgba(16,185,129,0)}}
+.ln{font-size:10px;font-weight:600;color:var(--ind);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.icb{width:34px;height:34px;border-radius:50%;background:var(--s3);border:1px solid var(--b2);color:var(--ind);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;-webkit-appearance:none}
+.icb:active{opacity:.6}
+.icb svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.rspin{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-/* PAGES */
-#pages { flex:1; position:relative; overflow:hidden; }
-.pg { position:absolute; inset:0; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; display:none; }
-.pg::-webkit-scrollbar { display:none; }
-.pg.on { display:block; animation:pgin .2s ease; }
-@keyframes pgin { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
-.pg-pad { padding-bottom: calc(var(--sb) + 76px); }
+/* LAYOUT */
+#content{flex:1;min-height:0;position:relative;overflow:hidden}
+.pg{position:absolute;top:0;left:0;right:0;bottom:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;display:none;background:var(--bg)}
+.pg.on{display:block}
+.pgi{padding-bottom:28px}
 
 /* NAV */
-#nav {
-  flex-shrink:0;
-  height: calc(var(--sb) + 62px);
-  padding: 8px 0 var(--sb);
-  background: rgba(8,11,20,.92);
-  backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
-  border-top: 0.5px solid var(--line);
-  display:flex; z-index:200;
-}
-.nb { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; background:none; border:none; cursor:pointer; color:var(--t3); transition:color .2s; }
-.nb svg { width:21px; height:21px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; transition:stroke .2s; }
-.nb span { font-size:10px; font-weight:600; letter-spacing:.03em; }
-.nb.on { color:var(--ind3); }
+#nav{flex-shrink:0;padding-bottom:env(safe-area-inset-bottom,0px);background:rgba(255,255,255,0.96);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);border-top:1px solid var(--b1)}
+.navr{height:58px;display:flex;align-items:center}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:none;border:none;cursor:pointer;color:var(--t3);padding:0;-webkit-appearance:none;transition:color .2s}
+.nb svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nb-l{font-size:10px;font-weight:600;letter-spacing:.02em}
+.nb.on{color:var(--ind)}
 
-/* ── SECTION PRIMITIVES ── */
-.s-divider { height:.5px; background:var(--line); margin:0 20px; }
-.s-head { padding:24px 20px 0; }
-.s-label { font-size:10px; font-weight:700; color:var(--t3); letter-spacing:.1em; text-transform:uppercase; margin-bottom:14px; display:flex; align-items:center; justify-content:space-between; }
-.s-label-act { font-size:11px; font-weight:600; color:var(--ind2); background:none; border:none; cursor:pointer; letter-spacing:.04em; }
-.s-label-act:active { opacity:.6; }
+/* PRIMITIVES */
+.div{height:1px;background:var(--b1);margin:0 16px}
+.sec{padding:20px 16px 0}
+.slbl{font-size:10px;font-weight:700;color:var(--t3);letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.sact{font-size:11px;font-weight:600;color:var(--ind);background:none;border:none;cursor:pointer;-webkit-appearance:none}
+.sact:active{opacity:.6}
+.ptitle{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:-.6px;padding:22px 16px 4px;color:var(--t1)}
+.shim{height:13px;border-radius:6px;background:var(--s3);animation:shim 1.4s infinite;margin-bottom:8px}
+.shim.w90{width:90%}.shim.w75{width:75%}.shim.w55{width:55%}
+@keyframes shim{0%,100%{opacity:.5}50%{opacity:1}}
 
-/* ── AI BRIEF ── */
-.ai-section { padding:24px 20px 0; }
-.ai-badge { display:inline-flex; align-items:center; gap:6px; font-size:10px; font-weight:700; color:var(--ind3); letter-spacing:.09em; text-transform:uppercase; margin-bottom:14px; }
-.ai-badge-dot { width:5px; height:5px; border-radius:50%; background:var(--ind3); animation:locpulse 1.8s infinite; }
-.ai-text { font-size:15px; line-height:1.85; color:var(--t2); font-weight:300; }
-.ai-text strong { color:var(--t1); font-weight:500; }
-.ai-footer { display:flex; align-items:center; justify-content:space-between; margin-top:14px; }
-.ai-ts { font-size:11px; color:var(--t3); }
-.ai-regen { font-size:11px; font-weight:600; color:var(--ind2); background:none; border:none; cursor:pointer; }
-.ai-regen:disabled { opacity:.4; }
-.shim { height:13px; border-radius:6px; background:var(--s2); animation:sh 1.4s infinite; margin-bottom:8px; }
-.shim.w90{width:90%} .shim.w75{width:75%} .shim.w60{width:60%}
-@keyframes sh { 0%,100%{opacity:.3} 50%{opacity:.7} }
+/* AI CARD — gradient */
+.ai-card{margin:16px 16px 0;border-radius:22px;padding:20px;background:linear-gradient(135deg,#6366f1 0%,#8b5cf6 60%,#a78bfa 100%);box-shadow:0 8px 32px rgba(99,102,241,.25);position:relative;overflow:hidden}
+.ai-card::after{content:"";position:absolute;top:-40px;right:-40px;width:150px;height:150px;background:rgba(255,255,255,.08);border-radius:50%;pointer-events:none}
+.ai-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;color:rgba(255,255,255,.8);letter-spacing:.09em;text-transform:uppercase;margin-bottom:12px;background:rgba(255,255,255,.15);border-radius:20px;padding:4px 10px}
+.ai-dot{width:5px;height:5px;border-radius:50%;background:#fff;animation:pulse 2s infinite}
+.ai-body{font-size:14px;line-height:1.85;color:rgba(255,255,255,.9);font-weight:400;position:relative}
+.ai-body strong{color:#fff;font-weight:600}
+.ai-ft{display:flex;align-items:center;justify-content:space-between;margin-top:12px;position:relative}
+.ai-ts{font-size:11px;color:rgba(255,255,255,.5)}
+.ai-btn{font-size:11px;font-weight:700;color:#fff;background:rgba(255,255,255,.2);border:none;cursor:pointer;-webkit-appearance:none;border-radius:20px;padding:5px 12px}
+.ai-btn:disabled{opacity:.5}
 
-/* ── WEATHER ── */
-.wx-section { padding:28px 20px 0; }
-.wx-city { font-size:11px; font-weight:700; color:var(--blue); letter-spacing:.09em; text-transform:uppercase; margin-bottom:6px; }
-.wx-main { display:flex; align-items:flex-end; justify-content:space-between; }
-.wx-temp-row { display:flex; align-items:flex-start; }
-.wx-num { font-family:'Syne',sans-serif; font-size:84px; font-weight:800; line-height:.9; letter-spacing:-7px; color:#fff; }
-.wx-deg { font-size:32px; color:var(--t3); margin-top:8px; letter-spacing:0; }
-.wx-emoji { font-size:72px; line-height:1; filter:drop-shadow(0 8px 28px rgba(56,189,248,.2)); }
-.wx-cond { font-size:16px; color:var(--t2); margin-top:10px; font-weight:400; }
-.wx-pills { display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; }
-.wxp { font-size:12px; font-weight:500; padding:6px 13px; border-radius:20px; display:inline-flex; align-items:center; gap:5px; }
-.wx-strip { display:flex; overflow-x:auto; margin-top:20px; gap:0; }
-.wx-strip::-webkit-scrollbar { display:none; }
-.wfd { display:flex; flex-direction:column; align-items:center; gap:6px; min-width:60px; flex-shrink:0; padding:10px 4px; border-radius:14px; }
-.wfd.tod { background:rgba(56,189,248,.08); outline:.5px solid rgba(56,189,248,.18); }
-.wfd-d { font-size:10px; font-weight:700; color:var(--t3); letter-spacing:.05em; }
-.wfd-i { font-size:22px; }
-.wfd-h { font-size:13px; font-weight:600; }
-.wfd-l { font-size:11px; color:var(--t3); }
+/* WEATHER CARD */
+.wx-card{margin:12px 16px 0;border-radius:22px;padding:20px;background:linear-gradient(145deg,#0284c7 0%,#0ea5e9 50%,#38bdf8 100%);box-shadow:0 8px 28px rgba(14,165,233,.28);position:relative;overflow:hidden}
+.wx-card::before{content:"";position:absolute;top:-40px;right:-20px;width:160px;height:160px;background:rgba(255,255,255,.1);border-radius:50%;pointer-events:none}
+.wx-loc{font-size:10px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;position:relative}
+.wx-main{display:flex;align-items:flex-start;justify-content:space-between;position:relative}
+.wx-tw{display:flex;align-items:flex-start}
+.wx-num{font-family:'Syne',sans-serif;font-size:80px;font-weight:800;line-height:.88;letter-spacing:-5px;color:#fff}
+.wx-unit{font-size:26px;color:rgba(255,255,255,.5);margin-top:8px}
+.wx-ico{font-size:64px;line-height:1}
+.wx-cond{font-size:15px;color:rgba(255,255,255,.85);margin-top:10px;position:relative}
+.wx-pills{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px;position:relative}
+.wxp{font-size:11px;font-weight:600;padding:6px 12px;border-radius:20px;background:rgba(255,255,255,.18);color:#fff}
+.wx-strip{display:flex;overflow-x:auto;margin-top:16px;gap:2px;position:relative}
+.wx-strip::-webkit-scrollbar{display:none}
+.wfd{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:54px;flex-shrink:0;padding:9px 4px;border-radius:14px}
+.wfd.tod{background:rgba(255,255,255,.18)}
+.wfd-d{font-size:10px;font-weight:700;color:rgba(255,255,255,.6)}
+.wfd-i{font-size:18px}
+.wfd-h{font-size:13px;font-weight:700;color:#fff}
+.wfd-l{font-size:11px;color:rgba(255,255,255,.5)}
 
-/* ── STAT ROW ── */
-.stat-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; padding:20px 20px 0; }
-.stat-card { background:var(--s1); border:.5px solid var(--line2); border-radius:18px; padding:16px 14px; }
-.stat-val { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; letter-spacing:-.5px; line-height:1; }
-.stat-lbl { font-size:10px; font-weight:600; color:var(--t3); letter-spacing:.06em; text-transform:uppercase; margin-top:6px; }
-.stat-ico { font-size:20px; margin-bottom:8px; }
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.sc{border-radius:18px;padding:16px 12px;background:var(--s1);border:1px solid var(--b1);box-shadow:0 2px 12px rgba(0,0,0,.05)}
+.sc-ico{font-size:22px;margin-bottom:8px}
+.sc-val{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;line-height:1}
+.sc-lbl{font-size:10px;font-weight:700;color:var(--t3);letter-spacing:.07em;text-transform:uppercase;margin-top:5px}
 
-/* ── GITHUB ── */
-.gh-section { padding:28px 20px 0; }
-.gh-header { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
-.gh-avatar { width:36px; height:36px; border-radius:50%; background:var(--s2); border:.5px solid var(--line2); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; overflow:hidden; }
-.gh-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
-.gh-name { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; }
-.gh-sub { font-size:12px; color:var(--t3); margin-top:1px; }
-.gh-commit-list { display:flex; flex-direction:column; gap:0; }
-.gh-commit { display:flex; align-items:flex-start; gap:12px; padding:12px 0; border-bottom:.5px solid var(--line); }
-.gh-commit:last-child { border-bottom:none; }
-.gh-commit-dot { width:8px; height:8px; border-radius:50%; background:var(--grn); flex-shrink:0; margin-top:5px; box-shadow:0 0 8px rgba(34,197,94,.4); }
-.gh-commit-body { flex:1; }
-.gh-commit-repo { font-size:11px; font-weight:600; color:var(--ind3); letter-spacing:.03em; margin-bottom:2px; }
-.gh-commit-msg { font-size:13px; color:var(--t1); font-weight:400; line-height:1.4; }
-.gh-commit-time { font-size:10px; color:var(--t3); margin-top:3px; }
-.gh-stat-row { display:flex; gap:20px; padding:16px 0 0; }
-.gh-stat { text-align:center; }
-.gh-stat-n { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; color:var(--t1); }
-.gh-stat-l { font-size:10px; color:var(--t3); font-weight:600; letter-spacing:.06em; text-transform:uppercase; margin-top:2px; }
-.gh-connect { display:flex; flex-direction:column; align-items:flex-start; gap:14px; background:var(--s1); border:.5px solid var(--line2); border-radius:20px; padding:20px; }
-.gh-connect-t { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; }
-.gh-connect-s { font-size:13px; color:var(--t2); line-height:1.6; }
-.gh-inp-row { display:flex; gap:8px; width:100%; }
-.gh-inp { flex:1; background:var(--s2); border:.5px solid var(--line2); border-radius:10px; padding:11px 14px; font-size:14px; color:var(--t1); font-family:'Inter',sans-serif; outline:none; }
-.gh-inp::placeholder { color:var(--t3); }
-.gh-inp:focus { border-color:rgba(91,91,214,.5); }
-.gh-save { padding:11px 18px; border-radius:10px; border:none; background:linear-gradient(135deg,#5b5bd6,#7c7ce8); color:#fff; font-size:13px; font-weight:700; cursor:pointer; font-family:'Syne',sans-serif; white-space:nowrap; }
-.gh-save:active { opacity:.85; }
+/* GITHUB */
+.gh-card-wrap{background:var(--s1);border:1px solid var(--b1);border-radius:22px;box-shadow:0 2px 16px rgba(0,0,0,.06)}
+.gh-card-inner{border-radius:22px;padding:18px;background:linear-gradient(145deg,#ecfdf5,#d1fae5);border:1px solid rgba(16,185,129,.12)}
+.gh-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.gh-ava{width:40px;height:40px;border-radius:50%;background:var(--s2);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;border:2px solid rgba(16,185,129,.3)}
+.gh-ava img{width:100%;height:100%;object-fit:cover}
+.gh-un{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--t1)}
+.gh-us{font-size:11px;color:var(--t2);margin-top:2px}
+.gh-commit{display:flex;align-items:flex-start;gap:11px;padding:10px 0;border-bottom:1px solid rgba(16,185,129,.1)}
+.gh-commit:last-child{border-bottom:none}
+.gh-dot{width:8px;height:8px;border-radius:50%;background:var(--grn);flex-shrink:0;margin-top:4px;box-shadow:0 0 8px rgba(16,185,129,.4)}
+.gh-cb{flex:1}
+.gh-repo{font-size:11px;font-weight:700;color:var(--grn);margin-bottom:2px}
+.gh-msg{font-size:13px;color:var(--t1);line-height:1.4}
+.gh-nums{display:flex;gap:20px;padding-top:12px;border-top:1px solid rgba(16,185,129,.1);margin-top:4px}
+.gh-nv{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--t1)}
+.gh-nl{font-size:10px;font-weight:600;color:var(--t3);letter-spacing:.07em;text-transform:uppercase;margin-top:2px}
+.gh-connect{background:var(--s1);border:1px solid var(--b1);border-radius:18px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.05)}
+.gh-ct{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--t1);margin-bottom:6px}
+.gh-cs{font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:14px}
+.gh-ir{display:flex;gap:8px}
+.gh-inp{flex:1;min-width:0;background:var(--s2);border:1px solid var(--b2);border-radius:12px;padding:12px 14px;font-size:14px;color:var(--t1);font-family:'Inter',sans-serif;outline:none;-webkit-appearance:none}
+.gh-inp::placeholder{color:var(--t3)}
+.gh-inp:focus{border-color:var(--ind)}
+.gh-sv{padding:12px 16px;border-radius:12px;border:none;background:var(--ind);color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;-webkit-appearance:none}
+.gh-sv:active{opacity:.85}
 
-/* ── CONNECT CARD ── */
-.connect-card { background:var(--s1); border:.5px solid var(--line2); border-radius:20px; padding:20px; margin:0; }
-.cc-top { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
-.cc-ico { width:44px; height:44px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
-.cc-name { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; }
-.cc-sub { font-size:12px; color:var(--t3); margin-top:2px; }
-.cc-desc { font-size:13px; color:var(--t2); line-height:1.65; margin-bottom:16px; }
-.cc-btn { width:100%; padding:13px; border-radius:12px; border:none; background:linear-gradient(135deg,#5b5bd6,#7c7ce8); color:#fff; font-size:14px; font-weight:700; cursor:pointer; font-family:'Syne',sans-serif; box-shadow:0 4px 20px rgba(91,91,214,.25); letter-spacing:-.1px; }
-.cc-btn:active { opacity:.85; }
-.cc-btn.connected { background:rgba(34,197,94,.12); color:var(--grn); box-shadow:none; }
+/* FLIGHTS / UPCOMING */
+.fl-card{background:var(--s1);border:1px solid var(--b1);border-radius:18px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.05)}
+.fl-top{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.fl-ico{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.fl-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--t1)}
+.fl-sub{font-size:12px;color:var(--t3);margin-top:2px}
+.fl-desc{font-size:13px;color:var(--t2);line-height:1.65;margin-bottom:14px}
+.fl-btn{width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--ind),var(--pink));color:#fff;font-size:14px;font-weight:700;cursor:pointer;-webkit-appearance:none;box-shadow:0 4px 14px rgba(99,102,241,.25)}
+.fl-btn:active{opacity:.85}
 
-/* ── NEWS ── */
-.ni { display:block; text-decoration:none; padding:16px 0; border-bottom:.5px solid var(--line); }
-.ni:last-child { border-bottom:none; }
-.ni:active { opacity:.7; }
-.ni-row { display:flex; align-items:flex-start; gap:12px; }
-.ni-bar { width:3px; min-height:44px; border-radius:2px; flex-shrink:0; margin-top:3px; }
-.ni-b { flex:1; }
-.ni-src { font-size:10px; font-weight:700; color:var(--t3); letter-spacing:.08em; text-transform:uppercase; margin-bottom:5px; }
-.ni-hl { font-size:14px; font-weight:500; color:var(--t1); line-height:1.5; }
-.ni-more { font-size:11px; font-weight:600; margin-top:6px; display:inline-flex; align-items:center; gap:3px; }
+/* MY DAY PAGE */
+.day-ai-card{margin:16px 16px 0;border-radius:22px;padding:20px;background:linear-gradient(135deg,#1e1b4b 0%,#312e81 50%,#4c1d95 100%);box-shadow:0 8px 32px rgba(49,46,129,.3);position:relative;overflow:hidden}
+.day-ai-card::before{content:"";position:absolute;top:-50px;right:-50px;width:180px;height:180px;background:rgba(255,255,255,.06);border-radius:50%;pointer-events:none}
+.day-ai-card::after{content:"";position:absolute;bottom:-30px;left:-30px;width:120px;height:120px;background:rgba(139,92,246,.1);border-radius:50%;pointer-events:none}
+.day-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;color:rgba(199,210,254,.8);letter-spacing:.09em;text-transform:uppercase;margin-bottom:14px;background:rgba(255,255,255,.1);border-radius:20px;padding:4px 10px;position:relative}
+.day-dot{width:5px;height:5px;border-radius:50%;background:#c7d2fe;animation:pulse 2s infinite}
+.day-txt{font-size:14px;line-height:1.9;color:rgba(224,231,255,.9);font-weight:300;position:relative}
+.day-txt strong{color:#fff;font-weight:600}
+.day-ft{display:flex;align-items:center;justify-content:space-between;margin-top:14px;position:relative}
+.day-ts{font-size:11px;color:rgba(199,210,254,.4)}
+.day-btn{font-size:11px;font-weight:700;color:#c7d2fe;background:rgba(255,255,255,.12);border:none;cursor:pointer;-webkit-appearance:none;border-radius:20px;padding:5px 12px}
+.day-btn:disabled{opacity:.5}
 
-/* ── MAP ── */
-.map-pg-inner { height:calc(100dvh - var(--st) - 56px - 62px - var(--sb)); position:relative; }
-#lmap { height:100%; width:100%; }
-.map-card { position:absolute; bottom:16px; left:14px; right:14px; z-index:400; background:rgba(8,11,20,.93); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:.5px solid var(--line2); border-radius:20px; padding:14px 16px; display:flex; align-items:center; gap:12px; }
-.map-card-info { flex:1; }
-.mc-city { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; }
-.mc-coords { font-size:11px; color:var(--t3); margin-top:2px; }
-.mc-open { font-size:13px; font-weight:700; padding:10px 20px; border-radius:20px; border:none; background:linear-gradient(135deg,#5b5bd6,#7c7ce8); color:#fff; cursor:pointer; white-space:nowrap; }
-.mc-open:active { opacity:.85; }
+/* ACTIVITY BIG STATS */
+.act-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.act-box{background:var(--s1);border:1px solid var(--b1);border-radius:18px;padding:16px 10px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.05)}
+.act-ico{font-size:24px;margin-bottom:8px}
+.act-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;line-height:1}
+.act-lbl{font-size:10px;font-weight:700;color:var(--t3);letter-spacing:.07em;text-transform:uppercase;margin-top:5px}
 
-/* ── CONNECT PAGE ── */
-.connect-section { padding:20px 20px 0; }
-.connect-section-t { font-family:'Syne',sans-serif; font-size:11px; font-weight:700; color:var(--t3); letter-spacing:.1em; text-transform:uppercase; margin-bottom:14px; }
-.connect-list { display:flex; flex-direction:column; gap:10px; }
+/* PLACES TIMELINE */
+.timeline{display:flex;flex-direction:column;gap:0}
+.tl-item{display:flex;gap:14px;padding-bottom:16px;position:relative}
+.tl-item::before{content:"";position:absolute;left:15px;top:32px;bottom:0;width:2px;background:var(--b2)}
+.tl-item:last-child::before{display:none}
+.tl-dot{width:32px;height:32px;border-radius:50%;background:var(--s1);border:2px solid var(--ind);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;z-index:1}
+.tl-body{flex:1;padding-top:4px}
+.tl-place{font-size:14px;font-weight:600;color:var(--t1)}
+.tl-time{font-size:11px;color:var(--t3);margin-top:2px}
+.tl-dur{font-size:11px;font-weight:600;color:var(--ind);margin-top:1px}
 
-/* ── SETTINGS / ABOUT ── */
-.about-section { padding:28px 20px 0; }
-.about-logo { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
-.about-version { font-size:12px; color:var(--t3); margin-top:2px; }
-.setting-row { display:flex; align-items:center; gap:12px; padding:16px 0; border-bottom:.5px solid var(--line); }
-.setting-row:last-child { border-bottom:none; }
-.setting-ico { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
-.setting-body { flex:1; }
-.setting-name { font-size:14px; font-weight:500; }
-.setting-sub { font-size:12px; color:var(--t3); margin-top:1px; }
+/* UPCOMING */
+.up-item{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--b1)}
+.up-item:last-child{border-bottom:none}
+.up-ico{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.up-body{flex:1}
+.up-title{font-size:14px;font-weight:600;color:var(--t1)}
+.up-sub{font-size:11px;color:var(--t3);margin-top:2px}
+.up-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:10px}
+.ub-today{background:rgba(245,158,11,.12);color:var(--amb)}
+.ub-tmr{background:rgba(59,130,246,.12);color:var(--blue)}
+.ub-soon{background:rgba(16,185,129,.12);color:var(--grn)}
 
-/* ── FORM ── */
-.form-sec { padding:20px 20px 0; }
-.form-t { font-family:'Syne',sans-serif; font-size:17px; font-weight:700; margin-bottom:4px; }
-.form-s { font-size:13px; color:var(--t3); margin-bottom:18px; }
-.flbl { font-size:10px; font-weight:700; color:var(--t3); letter-spacing:.08em; text-transform:uppercase; display:block; margin-bottom:6px; margin-top:16px; }
-.flbl:first-of-type { margin-top:0; }
-.finp { width:100%; background:var(--s2); border:.5px solid var(--line2); border-radius:12px; padding:13px 15px; font-size:14px; color:var(--t1); font-family:'Inter',sans-serif; outline:none; -webkit-appearance:none; transition:border-color .2s; }
-.finp:focus { border-color:rgba(91,91,214,.5); }
-.finp::placeholder { color:var(--t3); }
-.frow { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.fsave { width:100%; margin-top:20px; padding:15px; border-radius:14px; border:none; background:linear-gradient(135deg,#5b5bd6,#7c7ce8); color:#fff; font-size:15px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; box-shadow:0 4px 24px rgba(91,91,214,.28); }
-.fsave:active { opacity:.85; }
+/* NEWS COMPACT */
+.ni-compact{display:block;text-decoration:none;padding:11px 0;border-bottom:1px solid var(--b1)}
+.ni-compact:last-child{border-bottom:none}
+.ni-compact:active{opacity:.7}
+.ni-c-in{display:flex;align-items:flex-start;gap:10px}
+.ni-c-bar{width:3px;min-height:38px;border-radius:2px;flex-shrink:0;margin-top:2px}
+.ni-c-hl{font-size:13px;font-weight:500;color:var(--t1);line-height:1.4;flex:1}
 
-/* ── FLIGHTS (auto) ── */
-.flight-item { display:flex; align-items:center; gap:14px; padding:16px 0; border-bottom:.5px solid var(--line); }
-.flight-item:last-child { border-bottom:none; }
-.flight-route { display:flex; align-items:center; gap:8px; flex:1; }
-.flight-code { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; letter-spacing:-.5px; }
-.flight-arrow { color:var(--t3); font-size:18px; }
-.flight-right { text-align:right; }
-.flight-date { font-size:13px; font-weight:500; }
-.flight-info { font-size:11px; color:var(--t3); margin-top:2px; }
-.flight-badge { font-size:10px; font-weight:700; padding:3px 9px; border-radius:8px; }
+/* APP GRID */
+.app-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.abtn{display:flex;flex-direction:column;align-items:center;gap:7px;background:none;border:none;cursor:pointer;padding:0;-webkit-appearance:none}
+.abtn:active .a-ico{transform:scale(.88)}
+.a-ico{width:58px;height:58px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:26px;transition:transform .15s;box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.a-lbl{font-size:11px;font-weight:600;color:var(--t2);text-align:center;width:60px;line-height:1.2}
 
-/* ── EMPTY ── */
-.empty { text-align:center; padding:32px 20px; }
-.empty-ico { font-size:44px; opacity:.2; margin-bottom:12px; }
-.empty-t { font-size:15px; font-weight:600; color:var(--t2); margin-bottom:6px; }
-.empty-s { font-size:13px; color:var(--t3); line-height:1.65; max-width:270px; margin:0 auto; }
+/* MAP */
+#pg-map{padding:0;overflow:hidden}
+#map-wrap{position:absolute;top:0;left:0;right:0;bottom:0}
+#lmap{width:100%;height:100%;position:absolute;top:0;left:0;right:0;bottom:0}
+.mbar{position:absolute;bottom:16px;left:14px;right:14px;z-index:500;background:rgba(255,255,255,.96);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:20px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 24px rgba(0,0,0,.12)}
+.mbar-info{flex:1}
+.mbar-city{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--t1)}
+.mbar-c{font-size:11px;color:var(--t3);margin-top:2px}
+.mbar-btn{font-size:13px;font-weight:700;padding:10px 18px;border-radius:18px;border:none;background:linear-gradient(135deg,var(--ind),var(--pink));color:#fff;cursor:pointer;white-space:nowrap;-webkit-appearance:none;box-shadow:0 4px 14px rgba(99,102,241,.3)}
+.mbar-btn:active{opacity:.85}
+
+/* YOU PAGE */
+.you-hdr{margin:16px 16px 0;border-radius:22px;padding:20px;background:linear-gradient(135deg,var(--ind),var(--pink));box-shadow:0 8px 28px rgba(99,102,241,.25)}
+.you-ttl{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fff;margin-bottom:4px}
+.you-sub{font-size:13px;color:rgba(255,255,255,.7)}
+.you-sect{background:var(--s1);border:1px solid var(--b1);border-radius:20px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.05)}
+.yr{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--b1)}
+.yr:last-child{border-bottom:none}
+.yr-ico{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.yr-body{flex:1}
+.yr-name{font-size:14px;font-weight:600;color:var(--t1)}
+.yr-sub{font-size:11px;color:var(--t3);margin-top:1px}
+.yr-btn{font-size:12px;font-weight:700;color:var(--ind);background:none;border:none;cursor:pointer;-webkit-appearance:none;padding:6px 10px;white-space:nowrap}
+.yr-btn.dim{color:var(--t3)}
+.perm-btn{width:100%;padding:13px;border-radius:12px;border:none;background:var(--ind);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;-webkit-appearance:none;margin-top:14px}
+.perm-btn:active{opacity:.85}
 </style>
 </head>
 <body>
-<div id="shell">
 
-<!-- TOPBAR -->
+<div id="splash">
+  <svg class="sp-logo" width="88" height="88" viewBox="0 0 60 60" fill="none">
+    <defs><linearGradient id="slg" x1="0" y1="0" x2="60" y2="60" gradientUnits="userSpaceOnUse"><stop stop-color="#fff"/><stop offset="1" stop-color="rgba(255,255,255,0.7)"/></linearGradient></defs>
+    <circle class="spr" cx="30" cy="30" r="27" stroke="url(#slg)" stroke-width="2" fill="none"/>
+    <path class="spm" d="M16 42 L16 22 L30 34 L44 22 L44 42" stroke="url(#slg)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle class="spd" cx="30" cy="16" r="0" fill="url(#slg)"/>
+  </svg>
+  <div class="sp-name">MyLife</div>
+  <div class="sp-tag">Your AI-powered life dashboard</div>
+</div>
+
 <div id="topbar">
-  <div class="logo-mark">
-    <svg class="logo-svg" width="26" height="26" viewBox="0 0 26 26" fill="none">
-      <defs>
-        <linearGradient id="lg" x1="0" y1="0" x2="26" y2="26" gradientUnits="userSpaceOnUse">
-          <stop stop-color="#a5a5f5"/>
-          <stop offset="1" stop-color="#5b5bd6"/>
-        </linearGradient>
-      </defs>
-      <path d="M3 21 L3 10 L13 18.5 L23 10 L23 21" stroke="url(#lg)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-      <circle cx="13" cy="5" r="2.5" fill="url(#lg)"/>
-    </svg>
-    <span class="logo-word">MyLife</span>
-  </div>
-  <div class="topbar-center">
-    <div class="tb-date" id="tb-date"></div>
-    <div class="tb-greet" id="tb-greet"></div>
-  </div>
-  <div class="topbar-right">
-    <div class="loc-chip">
-      <div class="loc-dot"></div>
-      <span class="loc-text" id="loc-text">Locating...</span>
+  <div class="tbr">
+    <div class="logo">
+      <svg width="26" height="26" viewBox="0 0 60 60" fill="none">
+        <defs><linearGradient id="tlg" x1="0" y1="0" x2="60" y2="60" gradientUnits="userSpaceOnUse"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs>
+        <circle cx="30" cy="30" r="26" stroke="url(#tlg)" stroke-width="2" fill="none"/>
+        <path d="M16 42 L16 22 L30 34 L44 22 L44 42" stroke="url(#tlg)" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="30" cy="16" r="3.5" fill="url(#tlg)"/>
+      </svg>
+      <span class="logo-txt">MyLife</span>
     </div>
-    <button class="icon-btn" id="rbtn" aria-label="Refresh">
-      <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-    </button>
+    <div class="tbc">
+      <div class="tbd" id="tb-date"></div>
+      <div class="tbg" id="tb-greet"></div>
+    </div>
+    <div class="tbri">
+      <div class="loc-c"><div class="ldot"></div><span class="ln" id="loc-n">Locating...</span></div>
+      <button class="icb" id="btn-rf" aria-label="Refresh"><svg id="ico-rf" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button>
+    </div>
   </div>
 </div>
 
-<!-- PAGES -->
-<div id="pages">
+<div id="content">
 
 <!-- TODAY -->
-<div id="pg-today" class="pg on">
-<div class="pg-pad">
-
-  <!-- AI BRIEF -->
-  <div class="ai-section">
-    <div class="ai-badge"><div class="ai-badge-dot"></div>AI Daily Brief</div>
-    <div id="ai-body"><div><div class="shim w90"></div><div class="shim w75"></div><div class="shim w60"></div></div></div>
-    <div class="ai-footer">
-      <span class="ai-ts" id="ai-ts"></span>
-      <button class="ai-regen" id="ai-regen-btn">Regenerate</button>
-    </div>
+<div id="pg-home" class="pg on">
+<div class="pgi">
+  <div class="ai-card">
+    <div class="ai-badge"><div class="ai-dot"></div>AI Brief</div>
+    <div id="ai-txt"><div class="shim w90"></div><div class="shim w75"></div><div class="shim w55"></div></div>
+    <div class="ai-ft"><span class="ai-ts" id="ai-ts"></span><button class="ai-btn" id="ai-btn">Regenerate</button></div>
   </div>
-
-  <div style="height:24px"></div>
-  <div class="s-divider"></div>
-
-  <!-- WEATHER -->
-  <div class="wx-section">
-    <div class="wx-city" id="wx-city">DETECTING YOUR LOCATION</div>
+  <div class="wx-card">
+    <div class="wx-loc" id="wx-loc">DETECTING LOCATION</div>
     <div class="wx-main">
-      <div>
-        <div class="wx-temp-row">
-          <div class="wx-num" id="wx-num">—</div>
-          <div class="wx-deg">°C</div>
-        </div>
-        <div class="wx-cond" id="wx-cond">Loading...</div>
-      </div>
-      <div class="wx-emoji" id="wx-emoji">🌡</div>
+      <div><div class="wx-tw"><div class="wx-num" id="wx-num">--</div><div class="wx-unit">C</div></div><div class="wx-cond" id="wx-cond">Loading...</div></div>
+      <div class="wx-ico" id="wx-ico">&#127777;</div>
     </div>
     <div class="wx-pills" id="wx-pills"></div>
     <div class="wx-strip" id="wx-strip"></div>
   </div>
-
-  <div style="height:28px"></div>
-  <div class="s-divider"></div>
-
-  <!-- ACTIVITY STATS -->
-  <div class="s-head">
-    <div class="s-label">Today's Activity<button class="s-label-act" id="health-connect-btn">Connect Health</button></div>
-  </div>
-  <div class="stat-row">
-    <div class="stat-card">
-      <div class="stat-ico">👟</div>
-      <div class="stat-val" id="stat-steps" style="color:var(--grn)">—</div>
-      <div class="stat-lbl">Steps</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-ico">📍</div>
-      <div class="stat-val" id="stat-km" style="color:var(--blue)">—</div>
-      <div class="stat-lbl">km</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-ico">🔥</div>
-      <div class="stat-val" id="stat-cal" style="color:var(--amb)">—</div>
-      <div class="stat-lbl">kcal</div>
+  <div class="sec">
+    <div class="slbl">Today's Activity<button class="sact" id="steps-perm-btn">Enable Steps</button></div>
+    <div class="stats-row">
+      <div class="sc"><div class="sc-ico">&#128098;</div><div class="sc-val" id="sc-steps" style="color:var(--grn)">--</div><div class="sc-lbl">Steps</div></div>
+      <div class="sc"><div class="sc-ico">&#128205;</div><div class="sc-val" id="sc-km" style="color:var(--blue)">--</div><div class="sc-lbl">km</div></div>
+      <div class="sc"><div class="sc-ico">&#128293;</div><div class="sc-val" id="sc-cal" style="color:var(--amb)">--</div><div class="sc-lbl">kcal</div></div>
     </div>
   </div>
-
-  <div style="height:28px"></div>
-  <div class="s-divider"></div>
-
-  <!-- GITHUB -->
-  <div class="gh-section">
-    <div class="s-label">GitHub Activity<button class="s-label-act" id="gh-settings-btn">Settings</button></div>
-    <div id="gh-content"></div>
+  <div class="sec">
+    <div class="slbl">GitHub<button class="sact" id="gh-cfg">Configure</button></div>
+    <div id="gh-widget"></div>
   </div>
-
-  <div style="height:28px"></div>
-  <div class="s-divider"></div>
-
-  <!-- NEWS -->
-  <div class="s-head">
-    <div class="s-label">Headlines<button class="s-label-act" id="news-more-btn">All news</button></div>
+  <div class="sec">
+    <div class="slbl">Flights &amp; Travel</div>
+    <div id="flights-w"></div>
   </div>
-  <div style="padding:0 20px" id="home-news"></div>
-
   <div style="height:28px"></div>
-  <div class="s-divider"></div>
-
-  <!-- FLIGHTS -->
-  <div class="s-head">
-    <div class="s-label">Flights & Travel</div>
-  </div>
-  <div style="padding:0 20px" id="flights-section"></div>
-
-</div><!-- /pg-pad -->
+</div>
 </div>
 
-<!-- NEWS -->
-<div id="pg-news" class="pg">
-<div class="pg-pad">
-  <div style="padding:24px 20px 0"><div class="s-label" style="font-size:14px;font-family:Syne,sans-serif;font-weight:800;letter-spacing:-.3px;text-transform:none;color:var(--t1)">News</div></div>
-  <div style="padding:8px 20px 0"><div class="s-label" id="lt-lbl">Local</div></div>
-  <div style="padding:0 20px" id="lt-news"></div>
-  <div class="s-divider" style="margin:8px 20px"></div>
-  <div style="padding:16px 20px 0"><div class="s-label">World</div></div>
-  <div style="padding:0 20px" id="world-news"></div>
-  <div class="s-divider" style="margin:8px 20px"></div>
-  <div style="padding:16px 20px 0"><div class="s-label">Business & Tech</div></div>
-  <div style="padding:0 20px" id="biz-news"></div>
+<!-- MY DAY -->
+<div id="pg-day" class="pg">
+<div class="pgi">
+
+  <div class="day-ai-card">
+    <div class="day-badge"><div class="day-dot"></div>My Day — AI Summary</div>
+    <div id="day-txt"><div class="shim w90" style="background:rgba(255,255,255,.15)"></div><div class="shim w75" style="background:rgba(255,255,255,.12)"></div><div class="shim w55" style="background:rgba(255,255,255,.1)"></div></div>
+    <div class="day-ft">
+      <span class="day-ts" id="day-ts"></span>
+      <button class="day-btn" id="day-btn">Refresh</button>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="slbl">Activity Today<button class="sact" id="steps-perm-btn2">Enable Steps</button></div>
+    <div class="act-grid">
+      <div class="act-box"><div class="act-ico">&#128098;</div><div class="act-val" id="day-steps" style="color:var(--grn)">--</div><div class="act-lbl">Steps</div></div>
+      <div class="act-box"><div class="act-ico">&#128205;</div><div class="act-val" id="day-km" style="color:var(--blue)">--</div><div class="act-lbl">km</div></div>
+      <div class="act-box"><div class="act-ico">&#9200;</div><div class="act-val" id="day-time" style="color:var(--ind)">--</div><div class="act-lbl">Active</div></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="slbl">Places Today</div>
+    <div class="timeline" id="places-list"></div>
+  </div>
+
+  <div class="sec">
+    <div class="slbl">Coming Up</div>
+    <div id="upcoming-list"></div>
+  </div>
+
+  <div class="sec">
+    <div class="slbl">Today's Headlines</div>
+    <div id="day-news"></div>
+  </div>
+
+  <div style="height:28px"></div>
 </div>
 </div>
 
 <!-- MAP -->
 <div id="pg-map" class="pg">
-  <div class="map-pg-inner">
+  <div id="map-wrap">
     <div id="lmap"></div>
-    <div class="map-card">
-      <div class="map-card-info">
-        <div class="mc-city" id="mc-city">Your Location</div>
-        <div class="mc-coords" id="mc-coords">Getting GPS...</div>
-      </div>
-      <button class="mc-open" id="mc-open-btn">Open Maps</button>
+    <div class="mbar">
+      <div class="mbar-info"><div class="mbar-city" id="mb-city">Your Location</div><div class="mbar-c" id="mb-coords">Acquiring GPS...</div></div>
+      <button class="mbar-btn" id="btn-maps">Open Maps</button>
     </div>
   </div>
 </div>
 
-<!-- WEATHER FULL -->
-<div id="pg-weather" class="pg">
-<div class="pg-pad">
-  <div style="padding:24px 20px 0"><div style="font-family:Syne,sans-serif;font-size:24px;font-weight:800;letter-spacing:-.5px;background:linear-gradient(135deg,#ececf4,#a5a5f5);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Weather</div></div>
-  <div class="wx-section" style="padding-top:16px">
-    <div class="wx-city" id="wx2-city">DETECTING</div>
-    <div class="wx-main">
-      <div>
-        <div class="wx-temp-row">
-          <div class="wx-num" id="wx2-num">—</div>
-          <div class="wx-deg">°C</div>
-        </div>
-        <div class="wx-cond" id="wx2-cond"></div>
-      </div>
-      <div class="wx-emoji" id="wx2-emoji">🌡</div>
+<!-- YOU -->
+<div id="pg-you" class="pg">
+<div class="pgi">
+  <div class="you-hdr"><div class="you-ttl">Your Space</div><div class="you-sub">Apps, GitHub and integrations</div></div>
+  <div class="sec">
+    <div class="slbl">GitHub Settings</div>
+    <div class="gh-connect"><div class="gh-ct">Connect GitHub</div><div class="gh-cs">Enter your username to see today's commits in your AI brief and My Day summary.</div><div class="gh-ir"><input class="gh-inp" id="gh-inp-you" placeholder="your-github-username"><button class="gh-sv" id="gh-sv-you">Save</button></div></div>
+  </div>
+  <div class="sec">
+    <div class="slbl">Trips &amp; Flights</div>
+    <div id="trips-form-wrap"></div>
+  </div>
+  <div class="sec">
+    <div class="slbl">Quick Open</div>
+    <div class="app-grid" id="app-grid"></div>
+  </div>
+  <div class="sec">
+    <div class="slbl">Connect Accounts</div>
+    <div class="you-sect">
+      <div class="yr"><div class="yr-ico" style="background:linear-gradient(135deg,#fef2f2,#fee2e2)">&#128231;</div><div class="yr-body"><div class="yr-name">Gmail</div><div class="yr-sub">Auto-detect flights and bookings</div></div><button class="yr-btn" id="btn-gmail">Connect</button></div>
+      <div class="yr"><div class="yr-ico" style="background:linear-gradient(135deg,#eff6ff,#dbeafe)">&#128197;</div><div class="yr-body"><div class="yr-name">Google Calendar</div><div class="yr-sub">Events and meetings</div></div><button class="yr-btn" id="btn-gcal">Open</button></div>
+      <div class="yr" style="border-bottom:none"><div class="yr-ico" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7)">&#10084;&#65039;</div><div class="yr-body"><div class="yr-name">Apple Health</div><div class="yr-sub">Full integration — App Store soon</div></div><button class="yr-btn dim">Soon</button></div>
     </div>
-    <div class="wx-pills" id="wx2-pills"></div>
   </div>
   <div style="height:28px"></div>
-  <div style="padding:0 20px">
-    <div class="s-label">7-Day Forecast</div>
-    <div id="forecast"></div>
-  </div>
 </div>
 </div>
 
-<!-- CONNECT -->
-<div id="pg-connect" class="pg">
-<div class="pg-pad">
-  <div style="padding:24px 20px 0"><div style="font-family:Syne,sans-serif;font-size:24px;font-weight:800;letter-spacing:-.5px;background:linear-gradient(135deg,#ececf4,#a5a5f5);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Connect</div><div style="font-size:13px;color:var(--t3);margin-top:4px">Link your accounts to unlock everything</div></div>
+</div><!-- /content -->
 
-  <div class="connect-section" style="padding-top:24px">
-    <div class="connect-section-t">Productivity</div>
-    <div class="connect-list">
-      <div class="connect-card">
-        <div class="cc-top">
-          <div class="cc-ico" style="background:linear-gradient(135deg,#0f3460,#e94560)">📧</div>
-          <div><div class="cc-name">Gmail</div><div class="cc-sub">Inbox, flights, bookings</div></div>
-        </div>
-        <div class="cc-desc">Connect Gmail to automatically detect flights, hotel bookings, events and show your inbox summary every day. No manual entry needed.</div>
-        <button class="cc-btn" id="gmail-btn">Connect Gmail</button>
-      </div>
-      <div class="connect-card">
-        <div class="cc-top">
-          <div class="cc-ico" style="background:linear-gradient(135deg,#1a1a2e,#4a4a8a)">📅</div>
-          <div><div class="cc-name">Google Calendar</div><div class="cc-sub">Events, meetings, reminders</div></div>
-        </div>
-        <div class="cc-desc">See all your upcoming events, meetings and reminders without switching apps.</div>
-        <button class="cc-btn" id="gcal-btn">Connect Calendar</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="connect-section">
-    <div class="connect-section-t">Developer</div>
-    <div class="connect-list">
-      <div class="connect-card">
-        <div class="cc-top">
-          <div class="cc-ico" style="background:linear-gradient(135deg,#0d1117,#333)">🐙</div>
-          <div><div class="cc-name">GitHub</div><div class="cc-sub">Commits, repos, activity</div></div>
-        </div>
-        <div class="cc-desc">See today's commits, pull requests and repo activity. AI summarizes your coding day — "You were productive, pushed 5 commits to 2 projects."</div>
-        <div class="gh-inp-row" style="margin-top:0">
-          <input class="gh-inp" id="gh-inp-connect" placeholder="Your GitHub username">
-          <button class="gh-save" id="gh-save-connect">Save</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="connect-section">
-    <div class="connect-section-t">Health</div>
-    <div class="connect-list">
-      <div class="connect-card">
-        <div class="cc-top">
-          <div class="cc-ico" style="background:linear-gradient(135deg,#0a2e0a,#22c55e)">❤️</div>
-          <div><div class="cc-name">Apple Health</div><div class="cc-sub">Steps, km, calories, sleep</div></div>
-        </div>
-        <div class="cc-desc">Apple Health data is protected and can only be read by native iOS apps. To see your steps and activity, install the MyLife companion app from the App Store.</div>
-        <button class="cc-btn" style="background:var(--s2);color:var(--t3);box-shadow:none">Coming soon — App Store</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="connect-section">
-    <div class="connect-section-t">Communication</div>
-    <div class="connect-list">
-      <div style="display:flex;flex-direction:column;gap:0;background:var(--s1);border:.5px solid var(--line2);border-radius:20px;overflow:hidden">
-        <div class="setting-row" style="padding:14px 18px">
-          <div class="setting-ico" style="background:linear-gradient(135deg,#075e54,#25d366)">💬</div>
-          <div class="setting-body"><div class="setting-name">WhatsApp</div><div class="setting-sub">Open app directly</div></div>
-          <button style="font-size:12px;font-weight:600;color:var(--ind3);background:none;border:none;cursor:pointer" onclick="nativeOpen('whatsapp://','https://web.whatsapp.com')">Open</button>
-        </div>
-        <div class="setting-row" style="padding:14px 18px">
-          <div class="setting-ico" style="background:linear-gradient(135deg,#0a1e3d,#0088cc)">✈️</div>
-          <div class="setting-body"><div class="setting-name">Telegram</div><div class="setting-sub">Open app directly</div></div>
-          <button style="font-size:12px;font-weight:600;color:var(--ind3);background:none;border:none;cursor:pointer" onclick="nativeOpen('telegram://','https://web.telegram.org')">Open</button>
-        </div>
-        <div class="setting-row" style="padding:14px 18px;border:none">
-          <div class="setting-ico" style="background:linear-gradient(135deg,#0a3d2e,#25d366)">📞</div>
-          <div class="setting-body"><div class="setting-name">Phone & Messages</div><div class="setting-sub">iOS native apps</div></div>
-          <button style="font-size:12px;font-weight:600;color:var(--ind3);background:none;border:none;cursor:pointer" onclick="nativeOpen('tel://','tel://')">Open</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="connect-section">
-    <div class="connect-section-t">Travel & More</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <button class="setting-row" style="background:var(--s1);border:.5px solid var(--line2);border-radius:16px;padding:16px 14px;flex-direction:column;align-items:flex-start;gap:8px;cursor:pointer;text-align:left" onclick="nativeOpen('','https://www.google.com/flights')">
-        <div style="font-size:26px">✈️</div><div style="font-size:13px;font-weight:600">Google Flights</div><div style="font-size:11px;color:var(--t3)">Search flights</div>
-      </button>
-      <button class="setting-row" style="background:var(--s1);border:.5px solid var(--line2);border-radius:16px;padding:16px 14px;flex-direction:column;align-items:flex-start;gap:8px;cursor:pointer;text-align:left" onclick="nativeOpen('','https://www.booking.com')">
-        <div style="font-size:26px">🏨</div><div style="font-size:13px;font-weight:600">Booking.com</div><div style="font-size:11px;color:var(--t3)">Hotels & stays</div>
-      </button>
-      <button class="setting-row" style="background:var(--s1);border:.5px solid var(--line2);border-radius:16px;padding:16px 14px;flex-direction:column;align-items:flex-start;gap:8px;cursor:pointer;text-align:left" onclick="nativeOpen('spotify://','https://open.spotify.com')">
-        <div style="font-size:26px">🎵</div><div style="font-size:13px;font-weight:600">Spotify</div><div style="font-size:11px;color:var(--t3)">Music</div>
-      </button>
-      <button class="setting-row" style="background:var(--s1);border:.5px solid var(--line2);border-radius:16px;padding:16px 14px;flex-direction:column;align-items:flex-start;gap:8px;cursor:pointer;text-align:left" onclick="nativeOpen('instagram://','https://www.instagram.com')">
-        <div style="font-size:26px">📸</div><div style="font-size:13px;font-weight:600">Instagram</div><div style="font-size:11px;color:var(--t3)">Social</div>
-      </button>
-    </div>
-  </div>
-
-</div>
-</div>
-
-</div><!-- /pages -->
-
-<!-- NAV -->
 <nav id="nav">
-  <button class="nb on" id="nb-today">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-    <span>Today</span>
-  </button>
-  <button class="nb" id="nb-news">
-    <svg viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z"/><path d="M16 2v20"/><line x1="8" y1="7" x2="12" y2="7"/><line x1="8" y1="12" x2="12" y2="12"/></svg>
-    <span>News</span>
-  </button>
-  <button class="nb" id="nb-map">
-    <svg viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
-    <span>Map</span>
-  </button>
-  <button class="nb" id="nb-weather">
-    <svg viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
-    <span>Weather</span>
-  </button>
-  <button class="nb" id="nb-connect">
-    <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-    <span>Connect</span>
-  </button>
+  <div class="navr">
+    <button class="nb on" id="nb-home"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span class="nb-l">Today</span></button>
+    <button class="nb" id="nb-day"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/><circle cx="18" cy="6" r="4" fill="currentColor"/></svg><span class="nb-l">My Day</span></button>
+    <button class="nb" id="nb-map"><svg viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg><span class="nb-l">Map</span></button>
+    <button class="nb" id="nb-you"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="nb-l">You</span></button>
+  </div>
 </nav>
-
-</div><!-- /shell -->
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-'use strict';
-var DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-var SDAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-var WMO = {0:'Clear sky',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Foggy',48:'Icy fog',51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',71:'Light snow',73:'Snow',75:'Heavy snow',80:'Rain showers',81:'Heavy showers',82:'Violent showers',95:'Thunderstorm',99:'Thunderstorm'};
-var WICO = {0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',48:'🌫',51:'🌦',53:'🌦',55:'🌧',61:'🌦',63:'🌧',65:'🌧',71:'🌨',73:'❄️',75:'❄️',80:'🌦',81:'🌧',82:'⛈',95:'⛈',99:'⛈'};
-var COLORS = ['#5b5bd6','#38bdf8','#f59e0b','#22c55e','#f43f5e','#14b8a6','#a78bfa'];
+var DAYS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+var MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+var SDAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+var WMO={"0":"Clear sky","1":"Mainly clear","2":"Partly cloudy","3":"Overcast","45":"Foggy","48":"Icy fog","51":"Light drizzle","53":"Drizzle","55":"Heavy drizzle","61":"Light rain","63":"Rain","65":"Heavy rain","71":"Light snow","73":"Snow","75":"Heavy snow","80":"Rain showers","81":"Heavy showers","82":"Violent showers","95":"Thunderstorm","99":"Thunderstorm"};
+var WICO={"0":"☀️","1":"🌤","2":"⛅","3":"☁️","45":"🌫","48":"🌫","51":"🌦","53":"🌦","55":"🌧","61":"🌦","63":"🌧","65":"🌧","71":"🌨","73":"❄️","75":"❄️","80":"🌦","81":"🌧","82":"⛈","95":"⛈","99":"⛈"};
+var COLORS=["#6366f1","#3b82f6","#ec4899","#10b981","#f59e0b","#8b5cf6","#14b8a6","#ef4444"];
+var APPS=[
+  {i:"💬",l:"WhatsApp",s:"whatsapp://",u:"https://web.whatsapp.com",b:"linear-gradient(145deg,#075e54,#25d366)"},
+  {i:"📧",l:"Gmail",s:"message://",u:"https://mail.google.com",b:"linear-gradient(145deg,#b91c1c,#ef4444)"},
+  {i:"📅",l:"Calendar",s:"calshow://",u:"https://calendar.google.com",b:"linear-gradient(145deg,#1d4ed8,#3b82f6)"},
+  {i:"✈️",l:"Telegram",s:"telegram://",u:"https://web.telegram.org",b:"linear-gradient(145deg,#0369a1,#0ea5e9)"},
+  {i:"🎵",l:"Spotify",s:"spotify://",u:"https://open.spotify.com",b:"linear-gradient(145deg,#14532d,#22c55e)"},
+  {i:"▶️",l:"YouTube",s:"youtube://",u:"https://youtube.com",b:"linear-gradient(145deg,#991b1b,#ef4444)"},
+  {i:"📸",l:"Instagram",s:"instagram://",u:"https://www.instagram.com",b:"linear-gradient(145deg,#7c3aed,#ec4899)"},
+  {i:"📁",l:"Drive",s:"",u:"https://drive.google.com",b:"linear-gradient(145deg,#166534,#16a34a)"},
+  {i:"🏨",l:"Booking",s:"",u:"https://www.booking.com",b:"linear-gradient(145deg,#1e3a5f,#2563eb)"},
+  {i:"✈️",l:"Flights",s:"",u:"https://www.google.com/flights",b:"linear-gradient(145deg,#164e63,#0891b2)"},
+  {i:"🗺️",l:"Maps",s:"__maps__",u:"__maps__",b:"linear-gradient(145deg,#1e3a5f,#6366f1)"},
+  {i:"🏠",l:"Airbnb",s:"",u:"https://www.airbnb.com",b:"linear-gradient(145deg,#9f1239,#f43f5e)"}
+];
 
-var now = new Date();
-var H = now.getHours();
-var greet = H<5?'Good night':H<12?'Good morning':H<17?'Good afternoon':H<21?'Good evening':'Good night';
-var todayStr = now.toISOString().split('T')[0];
-var tmrStr = new Date(Date.now()+86400000).toISOString().split('T')[0];
+var NOW=new Date(), H=NOW.getHours();
+var GREET=H<5?"Good night":H<12?"Good morning":H<17?"Good afternoon":H<21?"Good evening":"Good night";
+var TODAY=NOW.toISOString().split("T")[0];
+var TMR=new Date(NOW.getTime()+86400000).toISOString().split("T")[0];
 
-document.getElementById('tb-date').textContent = DAYS[now.getDay()] + ' · ' + MONTHS[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
-document.getElementById('tb-greet').textContent = greet;
+document.getElementById("tb-date").textContent=DAYS[NOW.getDay()]+" · "+MONTHS[NOW.getMonth()]+" "+NOW.getDate()+", "+NOW.getFullYear();
+document.getElementById("tb-greet").textContent=GREET;
 
-var lat = null, lon = null, city = '', country = '', wxData = null;
-var mapInst = null, mapMark = null, mapInited = false;
+var uLat=null,uLon=null,uCity="",uCountry="",wxData=null;
+var mapInst=null,mapMark=null,mapOk=false;
+var stepCount=parseInt(localStorage.getItem("ml_steps_"+TODAY)||"0",10);
+var locationHistory=JSON.parse(localStorage.getItem("ml_lochist_"+TODAY)||"[]");
+var trips=JSON.parse(localStorage.getItem("ml_trips")||"[]");
+var newsCache=[];
+
+// STEP TRACKING via DeviceMotion (free, no API needed)
+var lastAcc=0, lastStepT=0, stepMotionActive=false;
+function handleMotion(e){
+  var a=e.accelerationIncludingGravity;
+  if(!a)return;
+  var mag=Math.sqrt((a.x||0)*(a.x||0)+(a.y||0)*(a.y||0)+(a.z||0)*(a.z||0));
+  var t=Date.now();
+  if(mag>15&&lastAcc<=15&&(t-lastStepT)>300){
+    stepCount++;lastStepT=t;
+    localStorage.setItem("ml_steps_"+TODAY,String(stepCount));
+    updateStepDisplays();
+  }
+  lastAcc=mag;
+}
+function updateStepDisplays(){
+  var km=(stepCount*0.00075).toFixed(1);
+  var cal=Math.round(stepCount*0.04);
+  ["sc-steps","day-steps"].forEach(function(id){var e=document.getElementById(id);if(e)e.textContent=stepCount>0?stepCount.toLocaleString():"--";});
+  ["sc-km","day-km"].forEach(function(id){var e=document.getElementById(id);if(e)e.textContent=stepCount>0?km:"--";});
+  ["sc-cal"].forEach(function(id){var e=document.getElementById(id);if(e)e.textContent=stepCount>0?cal:"--";});
+  var activeEl=document.getElementById("day-time");
+  if(activeEl)activeEl.textContent=stepCount>200?Math.round(stepCount/100)+"m":"--";
+}
+function requestSteps(){
+  if(typeof DeviceMotionEvent!=="undefined"&&typeof DeviceMotionEvent.requestPermission==="function"){
+    DeviceMotionEvent.requestPermission().then(function(r){
+      if(r==="granted"){window.addEventListener("devicemotion",handleMotion);stepMotionActive=true;}
+    }).catch(function(){});
+  }else if(typeof DeviceMotionEvent!=="undefined"){
+    window.addEventListener("devicemotion",handleMotion);stepMotionActive=true;
+  }
+}
+function setupStepBtns(){
+  ["steps-perm-btn","steps-perm-btn2"].forEach(function(id){
+    var b=document.getElementById(id);
+    if(b)b.addEventListener("click",function(){requestSteps();this.textContent="Active ✓";this.style.color="var(--grn)";});
+  });
+}
+updateStepDisplays();
+
+// LOCATION TRACKING
+function getDistance(lat1,lon1,lat2,lon2){
+  var R=6371,dLat=(lat2-lat1)*Math.PI/180,dLon=(lon2-lon1)*Math.PI/180;
+  var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function saveLocHistory(){localStorage.setItem("ml_lochist_"+TODAY,JSON.stringify(locationHistory));}
+function addPlaceEntry(lat,lon,name,ts){
+  locationHistory.push({lat:lat,lon:lon,name:name||"Unknown place",arr:ts,dep:ts});
+  saveLocHistory();renderPlaces();
+}
+function trackVisit(lat,lon){
+  var t=Date.now();
+  if(locationHistory.length===0){
+    reverseGeoForPlace(lat,lon,function(name){addPlaceEntry(lat,lon,name,t);});
+    return;
+  }
+  var last=locationHistory[locationHistory.length-1];
+  var dist=getDistance(lat,lon,last.lat,last.lon);
+  if(dist>0.15){
+    reverseGeoForPlace(lat,lon,function(name){addPlaceEntry(lat,lon,name,t);});
+  }else{
+    last.dep=t;saveLocHistory();renderPlaces();
+  }
+}
+function reverseGeoForPlace(lat,lon,cb){
+  fetch("https://nominatim.openstreetmap.org/reverse?lat="+lat+"&lon="+lon+"&format=json")
+    .then(function(r){return r.json();})
+    .then(function(d){
+      var name=d.address.amenity||d.address.cafe||d.address.restaurant||d.address.shop||d.address.building||d.address.road||d.address.neighbourhood||d.address.suburb||d.address.city||"Unknown place";
+      cb(name);
+    })
+    .catch(function(){cb("Unknown place");});
+}
+function fmtTime(ts){var d=new Date(ts);return d.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});}
+function fmtDuration(arr,dep){
+  var mins=Math.round((dep-arr)/60000);
+  if(mins<1)return "Just arrived";
+  if(mins<60)return mins+"m";
+  return Math.floor(mins/60)+"h "+(mins%60)+"m";
+}
+function renderPlaces(){
+  var el=document.getElementById("places-list");
+  if(!el)return;
+  if(locationHistory.length===0){el.innerHTML='<div style="font-size:13px;color:var(--t3);padding:8px 0">Location tracking will show places you visit today.</div>';return;}
+  var placeIcos=["🏠","☕","🏢","🛒","🌳","🏪","🎯","📍"];
+  el.innerHTML=locationHistory.map(function(p,i){
+    var dur=fmtDuration(p.arr,p.dep);
+    var ico=placeIcos[i%placeIcos.length];
+    return '<div class="tl-item"><div class="tl-dot">'+ico+'</div><div class="tl-body"><div class="tl-place">'+p.name+'</div><div class="tl-time">'+fmtTime(p.arr)+(p.dep>p.arr?" — "+fmtTime(p.dep):"")+'</div><div class="tl-dur">'+dur+'</div></div></div>';
+  }).join("");
+}
+
+// UPCOMING TRIPS
+function fmtDate(dateStr){var dt=new Date(dateStr+"T12:00:00");return dt.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});}
+function fmt12(t){if(!t)return"";var parts=t.split(":");var hh=parseInt(parts[0]);return(hh%12||12)+":"+parts[1]+(hh>=12?"pm":"am");}
+function renderUpcoming(){
+  var el=document.getElementById("upcoming-list");if(!el)return;
+  var upcoming=trips.filter(function(t){return t.date>=TODAY;}).sort(function(a,b){return a.date.localeCompare(b.date);}).slice(0,5);
+  if(!upcoming.length){el.innerHTML='<div style="font-size:13px;color:var(--t3);padding:8px 0">No upcoming trips. Add them in the You tab.</div>';return;}
+  var icos={flight:"✈️",hotel:"🏨",event:"🎫",trip:"🌍"};
+  var bgs={flight:"linear-gradient(135deg,#e0f2fe,#bae6fd)",hotel:"linear-gradient(135deg,#ede9fe,#ddd6fe)",event:"linear-gradient(135deg,#fef3c7,#fde68a)",trip:"linear-gradient(135deg,#dcfce7,#bbf7d0)"};
+  el.innerHTML=upcoming.map(function(t){
+    var isT=t.date===TODAY,isTmr=t.date===TMR;
+    var when=isT?"Today"+(t.time?" · "+fmt12(t.time):""):isTmr?"Tomorrow"+(t.time?" · "+fmt12(t.time):""):fmtDate(t.date)+(t.time?" · "+fmt12(t.time):"");
+    var badge=isT?'<span class="up-badge ub-today">TODAY</span>':isTmr?'<span class="up-badge ub-tmr">TOMORROW</span>':'<span class="up-badge ub-soon">'+fmtDate(t.date)+'</span>';
+    return '<div class="up-item"><div class="up-ico" style="background:'+(bgs[t.type]||bgs.trip)+'">'+(icos[t.type]||"📌")+'</div><div class="up-body"><div class="up-title">'+t.title+'</div><div class="up-sub">'+when+(t.notes?" · "+t.notes:"")+'</div></div>'+badge+'</div>';
+  }).join("");
+}
+
+// TRIPS FORM in You page
+function renderTripsForm(){
+  var el=document.getElementById("trips-form-wrap");if(!el)return;
+  var upTrips=trips.filter(function(t){return t.date>=TODAY;});
+  var listHtml="";
+  if(upTrips.length){
+    listHtml='<div style="background:var(--s1);border:1px solid var(--b1);border-radius:18px;overflow:hidden;margin-bottom:12px;box-shadow:0 2px 12px rgba(0,0,0,.05)">';
+    listHtml+=upTrips.slice(0,5).map(function(t){
+      return '<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--b1)"><span style="font-size:20px">'+(t.type==="flight"?"✈️":t.type==="hotel"?"🏨":t.type==="event"?"🎫":"🌍")+'</span><div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--t1)">'+t.title+'</div><div style="font-size:11px;color:var(--t3);margin-top:1px">'+fmtDate(t.date)+(t.time?" · "+fmt12(t.time):"")+'</div></div><button onclick="deleteTrip('+t.id+')" style="background:none;border:none;cursor:pointer;color:var(--t3);font-size:18px;padding:4px">×</button></div>';
+    }).join("")+"</div>";
+  }
+  el.innerHTML=listHtml+'<div style="background:var(--s1);border:1px solid var(--b1);border-radius:18px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.05)"><div style="font-family:Syne,sans-serif;font-size:14px;font-weight:700;margin-bottom:4px">Add a trip</div><div style="font-size:13px;color:var(--t2);margin-bottom:14px">Appears in My Day summary automatically</div><select id="t-type" style="width:100%;background:var(--s2);border:1px solid var(--b2);border-radius:12px;padding:12px 14px;font-size:14px;color:var(--t1);margin-bottom:10px;outline:none;-webkit-appearance:none"><option value="flight">&#9992;&#65039; Flight</option><option value="hotel">&#127968; Hotel</option><option value="event">&#127915; Event</option><option value="trip">&#127758; Trip</option></select><input id="t-title" placeholder="Flight to Rome, Italy" style="width:100%;background:var(--s2);border:1px solid var(--b2);border-radius:12px;padding:12px 14px;font-size:14px;color:var(--t1);margin-bottom:10px;outline:none;font-family:Inter,sans-serif;-webkit-appearance:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px"><input id="t-date" type="date" style="background:var(--s2);border:1px solid var(--b2);border-radius:12px;padding:12px 14px;font-size:14px;color:var(--t1);outline:none;-webkit-appearance:none"><input id="t-time" type="time" style="background:var(--s2);border:1px solid var(--b2);border-radius:12px;padding:12px 14px;font-size:14px;color:var(--t1);outline:none;-webkit-appearance:none"></div><input id="t-notes" placeholder="Booking ref: XY1234" style="width:100%;background:var(--s2);border:1px solid var(--b2);border-radius:12px;padding:12px 14px;font-size:14px;color:var(--t1);margin-bottom:14px;outline:none;font-family:Inter,sans-serif;-webkit-appearance:none"><button id="t-save" style="width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--ind),var(--pink));color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;-webkit-appearance:none">Save Trip</button></div>';
+  var di=document.getElementById("t-date");if(di)di.value=TODAY;
+  var sb=document.getElementById("t-save");
+  if(sb)sb.addEventListener("click",function(){
+    var title=document.getElementById("t-title").value.trim();
+    var date=document.getElementById("t-date").value;
+    if(!title||!date){alert("Please enter title and date.");return;}
+    trips.push({id:Date.now(),type:document.getElementById("t-type").value,title:title,date:date,time:document.getElementById("t-time").value,notes:document.getElementById("t-notes").value.trim()});
+    trips.sort(function(a,b){return a.date.localeCompare(b.date);});
+    localStorage.setItem("ml_trips",JSON.stringify(trips));
+    renderTripsForm();renderUpcoming();
+  });
+}
+function deleteTrip(id){
+  trips=trips.filter(function(t){return t.id!==id;});
+  localStorage.setItem("ml_trips",JSON.stringify(trips));
+  renderTripsForm();renderUpcoming();
+}
+
+// APP GRID
+var agEl=document.getElementById("app-grid"),agHtml="";
+for(var ai=0;ai<APPS.length;ai++){var ap=APPS[ai];agHtml+='<button class="abtn" data-si="'+ai+'"><div class="a-ico" style="background:'+ap.b+'">'+ap.i+'</div><div class="a-lbl">'+ap.l+'</div></button>';}
+agEl.innerHTML=agHtml;
+agEl.addEventListener("click",function(e){var btn=e.target.closest(".abtn");if(!btn)return;var ap=APPS[parseInt(btn.getAttribute("data-si"))];if(ap.s==="__maps__"||ap.u==="__maps__"){openMaps();return;}nativeOpen(ap.s,ap.u);});
 
 // NAV
-var pages = ['today','news','map','weather','connect'];
-pages.forEach(function(p) {
-  var btn = document.getElementById('nb-' + p);
-  if (btn) btn.addEventListener('click', function() { goPage(p); });
-});
-function goPage(p) {
-  document.querySelectorAll('.pg').forEach(function(x) { x.classList.remove('on'); });
-  document.querySelectorAll('.nb').forEach(function(x) { x.classList.remove('on'); });
-  var pg = document.getElementById('pg-' + p);
-  var nb = document.getElementById('nb-' + p);
-  if (pg) pg.classList.add('on');
-  if (nb) nb.classList.add('on');
-  if (p === 'map' && !mapInited) { setTimeout(initMap, 60); mapInited = true; }
+var PGS=["home","day","map","you"];
+function goPage(name){
+  var i,pg,nb;
+  for(i=0;i<PGS.length;i++){pg=document.getElementById("pg-"+PGS[i]);nb=document.getElementById("nb-"+PGS[i]);if(pg){pg.classList.remove("on");pg.scrollTop=0;}if(nb)nb.classList.remove("on");}
+  pg=document.getElementById("pg-"+name);nb=document.getElementById("nb-"+name);
+  if(pg)pg.classList.add("on");if(nb)nb.classList.add("on");
+  if(name==="map"){if(!mapOk){setTimeout(initMap,80);mapOk=true;}else if(mapInst){setTimeout(function(){mapInst.invalidateSize();},80);}}
+  if(name==="day"){renderPlaces();renderUpcoming();loadDaySummary(false);}
 }
-document.getElementById('news-more-btn').addEventListener('click', function() { goPage('news'); });
+for(var _i=0;_i<PGS.length;_i++){(function(p){var b=document.getElementById("nb-"+p);if(b)b.addEventListener("click",function(){goPage(p);});})(PGS[_i]);}
 
-// GPS — no hardcoded default
-function getLocation() {
-  if (!navigator.geolocation) return;
-  navigator.geolocation.getCurrentPosition(function(pos) {
-    lat = pos.coords.latitude;
-    lon = pos.coords.longitude;
-    geocode();
-    loadWeather();
-  }, function() {
-    loadNews('World news today');
-  }, { timeout:12000, maximumAge:300000 });
+document.getElementById("gh-cfg").addEventListener("click",function(){goPage("you");});
+document.getElementById("steps-perm-btn").addEventListener("click",function(){requestSteps();this.textContent="Active ✓";this.style.color="var(--grn)";});
+document.getElementById("steps-perm-btn2").addEventListener("click",function(){requestSteps();this.textContent="Active ✓";this.style.color="var(--grn)";});
+document.getElementById("btn-gmail").addEventListener("click",function(){alert("Gmail OAuth requires a backend server. Coming in the native app. For now, add flights manually in the Trips section.");});
+document.getElementById("btn-gcal").addEventListener("click",function(){nativeOpen("calshow://","https://calendar.google.com");});
+document.getElementById("btn-maps").addEventListener("click",function(){openMaps();});
+document.getElementById("gh-sv-you").addEventListener("click",function(){var v=document.getElementById("gh-inp-you").value.trim();if(!v)return;localStorage.setItem("gh_user",v);loadGitHub();goPage("home");});
+document.getElementById("gh-inp-you").addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("gh-sv-you").click();});
+var _sg=localStorage.getItem("gh_user");if(_sg)document.getElementById("gh-inp-you").value=_sg;
+
+function nativeOpen(scheme,url){if(scheme){window.location.href=scheme;setTimeout(function(){window.open(url,"_blank");},1200);}else if(url)window.open(url,"_blank");}
+function openMaps(){if(!uLat){alert("Location not available yet.");return;}window.location.href="maps://?ll="+uLat+","+uLon+"&q="+encodeURIComponent(uCity||"My Location");setTimeout(function(){window.open("https://maps.google.com/?q="+uLat+","+uLon,"_blank");},1200);}
+
+// GPS
+function getLocation(){
+  if(!navigator.geolocation){return;}
+  navigator.geolocation.getCurrentPosition(
+    function(pos){uLat=pos.coords.latitude;uLon=pos.coords.longitude;trackVisit(uLat,uLon);geocode();loadWeather();},
+    function(){},
+    {timeout:12000,maximumAge:300000}
+  );
+  navigator.geolocation.watchPosition(function(pos){uLat=pos.coords.latitude;uLon=pos.coords.longitude;trackVisit(uLat,uLon);},function(){},{enableHighAccuracy:false,maximumAge:60000,timeout:30000});
 }
-async function geocode() {
-  try {
-    var r = await fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json');
-    var d = await r.json();
-    city = d.address.city || d.address.town || d.address.village || d.address.county || 'Your City';
-    country = d.address.country || '';
-    updateLocUI();
-    loadNews(city + ' ' + country);
-  } catch(e) { updateLocUI(); }
+function geocode(){
+  fetch("https://nominatim.openstreetmap.org/reverse?lat="+uLat+"&lon="+uLon+"&format=json")
+    .then(function(r){return r.json();})
+    .then(function(d){uCity=d.address.city||d.address.town||d.address.village||d.address.county||"Your City";uCountry=d.address.country||"";updateLocUI();loadNews();})
+    .catch(function(){updateLocUI();loadNews();});
 }
-function updateLocUI() {
-  var s = city + (country ? ', ' + country : '');
-  document.getElementById('loc-text').textContent = city || 'GPS active';
-  document.getElementById('wx-city').textContent = (city || 'DETECTING').toUpperCase();
-  document.getElementById('wx2-city').textContent = (city || 'DETECTING').toUpperCase();
-  document.getElementById('lt-lbl').textContent = 'Local · ' + (city || 'World');
-  document.getElementById('mc-city').textContent = s || 'Your Location';
-  if (lat) document.getElementById('mc-coords').textContent = lat.toFixed(5) + '°N, ' + lon.toFixed(5) + '°E';
-  if (mapInst && mapMark) { mapInst.setView([lat,lon],14); mapMark.setLatLng([lat,lon]); }
+function updateLocUI(){
+  var s=uCity+(uCountry?", "+uCountry:"");
+  document.getElementById("loc-n").textContent=uCity||"GPS active";
+  document.getElementById("wx-loc").textContent=(uCity||"DETECTING").toUpperCase();
+  document.getElementById("mb-city").textContent=s||"Your Location";
+  if(uLat)document.getElementById("mb-coords").textContent=uLat.toFixed(4)+"N  "+uLon.toFixed(4)+"E";
+  if(mapInst&&mapMark){mapInst.setView([uLat,uLon],14);mapMark.setLatLng([uLat,uLon]);}
 }
 
 // MAP
-function initMap() {
-  var clat = lat || 51.5, clon = lon || 0;
-  mapInst = L.map('lmap', {zoomControl:false, attributionControl:false}).setView([clat, clon], lat ? 14 : 4);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {maxZoom:19}).addTo(mapInst);
-  if (lat) {
-    var ico = L.divIcon({html:'<div style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#a5a5f5,#5b5bd6);border:3px solid #fff;box-shadow:0 0 0 8px rgba(91,91,214,.2)"></div>',iconSize:[22,22],iconAnchor:[11,11],className:''});
-    mapMark = L.marker([lat,lon],{icon:ico}).addTo(mapInst);
-  }
-  L.control.zoom({position:'topright'}).addTo(mapInst);
-}
-document.getElementById('mc-open-btn').addEventListener('click', function() {
-  if (!lat) { alert('Location not available yet. Please allow location access.'); return; }
-  window.location.href = 'maps://?ll=' + lat + ',' + lon + '&q=' + encodeURIComponent(city || 'My Location');
-  setTimeout(function() { window.open('https://maps.google.com/?q=' + lat + ',' + lon, '_blank'); }, 1200);
-});
-function nativeOpen(scheme, fallback) {
-  if (scheme) window.location.href = scheme;
-  setTimeout(function() { window.open(fallback, '_blank'); }, 1200);
+function initMap(){
+  if(typeof L==="undefined"){setTimeout(initMap,500);return;}
+  var clat=uLat||54.5,clon=uLon||25.2;
+  mapInst=L.map("lmap",{zoomControl:false,attributionControl:false}).setView([clat,clon],uLat?14:5);
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{maxZoom:19}).addTo(mapInst);
+  if(uLat){var ico=L.divIcon({html:"<div style='width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#ec4899);border:3px solid #fff;box-shadow:0 0 0 6px rgba(99,102,241,0.25)'></div>",iconSize:[20,20],iconAnchor:[10,10],className:""});mapMark=L.marker([uLat,uLon],{icon:ico}).addTo(mapInst);}
+  L.control.zoom({position:"topright"}).addTo(mapInst);
+  setTimeout(function(){if(mapInst)mapInst.invalidateSize();},200);
 }
 
 // WEATHER
-async function loadWeather() {
-  if (!lat) return;
-  try {
-    var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,weathercode,windspeed_10m,relativehumidity_2m,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,weathercode,precipitation_probability_max&timezone=auto&forecast_days=7';
-    var r = await fetch(url);
-    var d = await r.json();
-    wxData = d;
-    var c = d.current;
-    var t = Math.round(c.temperature_2m), fe = Math.round(c.apparent_temperature);
-    var cd = WMO[c.weathercode] || 'Clear', ic = WICO[c.weathercode] || '🌡';
-    var w = Math.round(c.windspeed_10m), hu = c.relativehumidity_2m;
-    var pills = '<span class="wxp" style="background:rgba(56,189,248,.1);color:#38bdf8">💨 ' + w + ' km/h</span><span class="wxp" style="background:rgba(20,184,166,.1);color:#14b8a6">💧 ' + hu + '%</span><span class="wxp" style="background:rgba(245,158,11,.1);color:#f59e0b">🌡 Feels ' + fe + '°C</span>';
-    ['','2'].forEach(function(s) {
-      document.getElementById('wx' + s + '-num').textContent = t;
-      document.getElementById('wx' + s + '-cond').textContent = ic + '  ' + cd;
-      document.getElementById('wx' + s + '-emoji').textContent = ic;
-      document.getElementById('wx' + s + '-pills').innerHTML = pills;
-    });
-    var dy = d.daily;
-    document.getElementById('wx-strip').innerHTML = Array.from({length:7}, function(_,i) {
-      var dt = new Date(dy.time[i] + 'T12:00:00');
-      return '<div class="wfd' + (i===0?' tod':'') + '"><div class="wfd-d">' + (i===0?'NOW':SDAYS[dt.getDay()]) + '</div><div class="wfd-i">' + (WICO[dy.weathercode[i]]||'🌡') + '</div><div class="wfd-h">' + Math.round(dy.temperature_2m_max[i]) + '°</div><div class="wfd-l">' + Math.round(dy.temperature_2m_min[i]) + '°</div></div>';
-    }).join('');
-    document.getElementById('forecast').innerHTML = Array.from({length:7}, function(_,i) {
-      var dt = new Date(dy.time[i] + 'T12:00:00');
-      var dn = i===0?'Today':i===1?'Tomorrow':DAYS[dt.getDay()];
-      var pr = dy.precipitation_probability_max[i];
-      return '<div style="display:flex;align-items:center;padding:13px 0;border-bottom:.5px solid var(--line)"><div style="width:86px;font-size:13px;font-weight:500">' + dn + '</div><div style="font-size:20px;margin-right:10px">' + (WICO[dy.weathercode[i]]||'🌡') + '</div><div style="flex:1;font-size:11px;color:var(--t3)">' + (pr>20?'💧 '+pr+'%':'') + '</div><div style="font-size:14px;font-weight:600">' + Math.round(dy.temperature_2m_max[i]) + '° <span style="color:var(--t3)">' + Math.round(dy.temperature_2m_min[i]) + '°</span></div></div>';
-    }).join('');
-  } catch(e) {}
+function loadWeather(){
+  if(!uLat)return;
+  fetch("https://api.open-meteo.com/v1/forecast?latitude="+uLat+"&longitude="+uLon+"&current=temperature_2m,weathercode,windspeed_10m,relativehumidity_2m,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,weathercode,precipitation_probability_max&timezone=auto&forecast_days=7")
+    .then(function(r){return r.json();})
+    .then(function(d){
+      wxData=d;
+      var c=d.current,t=Math.round(c.temperature_2m),fe=Math.round(c.apparent_temperature);
+      var wc=String(c.weathercode),cd=WMO[wc]||"Clear",ic=WICO[wc]||"🌡";
+      var w=Math.round(c.windspeed_10m),hu=c.relativehumidity_2m;
+      document.getElementById("wx-num").textContent=t;
+      document.getElementById("wx-cond").textContent=ic+"  "+cd;
+      document.getElementById("wx-ico").textContent=ic;
+      document.getElementById("wx-pills").innerHTML='<span class="wxp">💨 '+w+' km/h</span><span class="wxp">💧 '+hu+'%</span><span class="wxp">🌡 Feels '+fe+'°C</span>';
+      var dy=d.daily,strip="";
+      for(var i=0;i<7;i++){var dt=new Date(dy.time[i]+"T12:00:00");strip+='<div class="wfd'+(i===0?" tod":"")+'"><div class="wfd-d">'+(i===0?"NOW":SDAYS[dt.getDay()])+'</div><div class="wfd-i">'+(WICO[String(dy.weathercode[i])]||"🌡")+'</div><div class="wfd-h">'+Math.round(dy.temperature_2m_max[i])+'°</div><div class="wfd-l">'+Math.round(dy.temperature_2m_min[i])+'°</div></div>';}
+      document.getElementById("wx-strip").innerHTML=strip;
+    })
+    .catch(function(){document.getElementById("wx-cond").textContent="Tap refresh to retry";});
 }
 
-// AI BRIEF
-async function loadAI(force) {
-  var KEY = 'ml_ai_' + todayStr, KT = 'ml_ai_t_' + todayStr;
-  if (!force) {
-    var c = localStorage.getItem(KEY), ct = localStorage.getItem(KT);
-    if (c && ct && Date.now() - parseInt(ct) < 3600000) {
-      document.getElementById('ai-body').innerHTML = '<p class="ai-text">' + c + '</p>';
-      document.getElementById('ai-ts').textContent = 'Updated ' + new Date(parseInt(ct)).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-      return;
-    }
-  }
-  document.getElementById('ai-body').innerHTML = '<div><div class="shim w90"></div><div class="shim w75"></div><div class="shim w60"></div></div>';
-  var btn = document.getElementById('ai-regen-btn');
-  btn.textContent = 'Thinking...'; btn.disabled = true;
-  var loc = city ? (city + (country ? ', ' + country : '')) : 'an unknown location';
-  var wStr = wxData ? 'It is ' + Math.round(wxData.current.temperature_2m) + '°C and ' + (WMO[wxData.current.weathercode]||'clear') + ', wind ' + Math.round(wxData.current.windspeed_10m) + ' km/h, feels like ' + Math.round(wxData.current.apparent_temperature) + '°C' : 'weather not available';
-  var ghUser = localStorage.getItem('gh_user') || '';
-  var ghStr = ghUser ? 'GitHub username: ' + ghUser + ' (check their recent commit activity)' : 'No GitHub connected';
-  var prompt = 'You are a personal AI assistant. Write a 2-3 sentence daily brief for someone in ' + loc + '. Today is ' + now.toDateString() + ', ' + greet.toLowerCase() + '.
-
-Weather: ' + wStr + '
-GitHub: ' + ghStr + '
-
-Search for: 1) today's top news from ' + loc + ', 2) if GitHub username provided, their recent commit activity.
-
-Write warmly and personally. Give a practical weather clothing tip. If GitHub connected, summarize their coding activity ("you pushed X commits to Y today"). Include one local news highlight. Use <strong> tags for key facts. 2-3 sentences maximum, plain flowing text, no bullets.';
-  try {
-    var res = await fetch('https://api.anthropic.com/v1/messages', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({model:'claude-sonnet-4-20250514', max_tokens:300, messages:[{role:'user',content:prompt}], tools:[{type:'web_search_20250305',name:'web_search'}]})});
-    var data = await res.json();
-    var text = data.content.filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('').trim();
-    localStorage.setItem(KEY, text); localStorage.setItem(KT, String(Date.now()));
-    document.getElementById('ai-body').innerHTML = '<p class="ai-text">' + text + '</p>';
-    document.getElementById('ai-ts').textContent = 'Updated ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-  } catch(e) {
-    document.getElementById('ai-body').innerHTML = '<p class="ai-text" style="color:var(--t3)">Could not load brief. Check connection and tap Regenerate.</p>';
-  }
-  btn.textContent = 'Regenerate'; btn.disabled = false;
+// AI BRIEF (Today tab)
+function loadAI(force){
+  var KEY="ml_ai_"+TODAY,KT="ml_ai_t_"+TODAY;
+  if(!force){var c=localStorage.getItem(KEY),ct=localStorage.getItem(KT);if(c&&ct&&(Date.now()-parseInt(ct,10))<3600000){document.getElementById("ai-txt").innerHTML='<div class="ai-body">'+c+"</div>";document.getElementById("ai-ts").textContent="Updated "+new Date(parseInt(ct,10)).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});return;}}
+  document.getElementById("ai-txt").innerHTML='<div class="shim w90"></div><div class="shim w75"></div><div class="shim w55"></div>';
+  var btn=document.getElementById("ai-btn");btn.textContent="Thinking...";btn.disabled=true;
+  var loc=uCity?(uCity+(uCountry?", "+uCountry:"")):"unknown location";
+  var wStr=wxData?("Temp "+Math.round(wxData.current.temperature_2m)+"C, "+(WMO[String(wxData.current.weathercode)]||"clear")+", wind "+Math.round(wxData.current.windspeed_10m)+"km/h"):"not loaded";
+  var ghUser=localStorage.getItem("gh_user")||"";
+  var prompt="Brief for person in "+loc+", "+NOW.toDateString()+". "+wStr+". "+(ghUser?"GitHub:"+ghUser+" check commits.":"")+" Search top news from "+loc+" today. Write 2-3 warm sentences: weather tip, coding if any, news. Bold facts with strong tags.";
+  fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:250,messages:[{role:"user",content:prompt}],tools:[{type:"web_search_20250305",name:"web_search"}]})})
+    .then(function(r){return r.json();})
+    .then(function(data){var text="";for(var i=0;i<data.content.length;i++){if(data.content[i].type==="text")text+=data.content[i].text;}text=text.trim();localStorage.setItem(KEY,text);localStorage.setItem(KT,String(Date.now()));document.getElementById("ai-txt").innerHTML='<div class="ai-body">'+text+"</div>";document.getElementById("ai-ts").textContent="Updated "+new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});})
+    .catch(function(){document.getElementById("ai-txt").innerHTML='<div class="ai-body">Could not load. Tap Regenerate.</div>';})
+    .finally(function(){btn.textContent="Regenerate";btn.disabled=false;});
 }
-document.getElementById('ai-regen-btn').addEventListener('click', function() { loadAI(true); });
+document.getElementById("ai-btn").addEventListener("click",function(){loadAI(true);});
+
+// MY DAY FULL SUMMARY
+function loadDaySummary(force){
+  var KEY="ml_day_"+TODAY,KT="ml_day_t_"+TODAY;
+  if(!force){var c=localStorage.getItem(KEY),ct=localStorage.getItem(KT);if(c&&ct&&(Date.now()-parseInt(ct,10))<1800000){document.getElementById("day-txt").innerHTML='<div class="day-txt">'+c+"</div>";document.getElementById("day-ts").textContent="Updated "+new Date(parseInt(ct,10)).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});return;}}
+  document.getElementById("day-txt").innerHTML='<div class="shim w90" style="background:rgba(255,255,255,.15)"></div><div class="shim w75" style="background:rgba(255,255,255,.12)"></div><div class="shim w55" style="background:rgba(255,255,255,.1)"></div>';
+  var btn=document.getElementById("day-btn");btn.textContent="Generating...";btn.disabled=true;
+  var loc=uCity?(uCity+(uCountry?", "+uCountry:"")):"unknown location";
+  var wStr=wxData?("Temperature: "+Math.round(wxData.current.temperature_2m)+"C, "+(WMO[String(wxData.current.weathercode)]||"clear")):"unknown weather";
+  var steps=stepCount>0?stepCount+" steps taken":"steps not tracked yet";
+  var places=locationHistory.length>0?locationHistory.map(function(p){return p.name+" ("+fmtDuration(p.arr,p.dep)+")";}).join(", "):"no places tracked yet";
+  var upTrips=trips.filter(function(t){return t.date>=TODAY;}).slice(0,3).map(function(t){return t.title+" on "+t.date+(t.time?" at "+fmt12(t.time):"");}).join(", ")||"no upcoming trips";
+  var ghUser=localStorage.getItem("gh_user")||"";
+  var newsSum=newsCache.slice(0,3).map(function(n){return n.headline;}).join(". ")||"search for top news";
+  var prompt="You are a personal AI assistant. Create a warm, personal My Day summary for someone in "+loc+". Today is "+NOW.toDateString()+" at "+NOW.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})+".\n\nData:\n- Weather: "+wStr+"\n- Steps: "+steps+"\n- Places visited today: "+places+"\n- Upcoming trips/events: "+upTrips+"\n- GitHub: "+(ghUser?ghUser+" - check recent commits":"not connected")+"\n- News headlines: "+newsSum+"\n\nSearch for latest news from "+loc+" today and check GitHub activity if username provided.\n\nWrite a friendly, personal day summary of 4-6 sentences covering: how their day looks so far, steps and activity, places they have been, upcoming trips or events, coding activity if any, and one key news story. Sound like a smart personal assistant talking to a friend. Bold key facts like step count, place names, trip details, temperature with strong tags.";
+  fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:400,messages:[{role:"user",content:prompt}],tools:[{type:"web_search_20250305",name:"web_search"}]})})
+    .then(function(r){return r.json();})
+    .then(function(data){var text="";for(var i=0;i<data.content.length;i++){if(data.content[i].type==="text")text+=data.content[i].text;}text=text.trim();localStorage.setItem(KEY,text);localStorage.setItem(KT,String(Date.now()));document.getElementById("day-txt").innerHTML='<div class="day-txt">'+text+"</div>";document.getElementById("day-ts").textContent="Updated "+new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});})
+    .catch(function(){document.getElementById("day-txt").innerHTML='<div class="day-txt">Could not generate summary. Tap Refresh to try again.</div>';})
+    .finally(function(){btn.textContent="Refresh";btn.disabled=false;});
+}
+document.getElementById("day-btn").addEventListener("click",function(){loadDaySummary(true);});
 
 // GITHUB
-async function loadGitHub() {
-  var username = localStorage.getItem('gh_user');
-  var el = document.getElementById('gh-content');
-  if (!username) {
-    el.innerHTML = '<div class="gh-connect"><div class="gh-connect-t">Connect GitHub</div><div class="gh-connect-s">Enter your username to see today's commits, pull requests and project activity.</div><div class="gh-inp-row"><input class="gh-inp" id="gh-inp-main" placeholder="your-username"><button class="gh-save" id="gh-save-main">Save</button></div></div>';
-    document.getElementById('gh-save-main').addEventListener('click', function() {
-      var v = document.getElementById('gh-inp-main').value.trim();
-      if (!v) return;
-      localStorage.setItem('gh_user', v);
-      loadGitHub();
-    });
-    document.getElementById('gh-inp-main').addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') { document.getElementById('gh-save-main').click(); }
-    });
-    return;
-  }
-  el.innerHTML = '<div><div class="shim w90"></div><div class="shim w70"></div></div>';
-  try {
-    var [evRes, userRes] = await Promise.all([
-      fetch('https://api.github.com/users/' + username + '/events?per_page=50'),
-      fetch('https://api.github.com/users/' + username)
-    ]);
-    var events = await evRes.json();
-    var user = await userRes.json();
-    if (!Array.isArray(events)) throw new Error('Invalid response');
-    var todayEvents = events.filter(function(e) { return e.created_at && e.created_at.startsWith(todayStr); });
-    var commits = 0, repos = {}, prs = 0, creates = 0;
-    todayEvents.forEach(function(e) {
-      if (e.type === 'PushEvent' && e.payload && e.payload.commits) {
-        commits += e.payload.commits.length;
-        var rname = e.repo.name.split('/')[1];
-        if (!repos[rname]) repos[rname] = [];
-        e.payload.commits.forEach(function(cm) { repos[rname].push(cm.message.split('\n')[0].substring(0,70)); });
-      }
-      if (e.type === 'PullRequestEvent') prs++;
-      if (e.type === 'CreateEvent') creates++;
-    });
-    var avatarUrl = user.avatar_url || '';
-    var html = '<div class="gh-header"><div class="gh-avatar">' + (avatarUrl ? '<img src="' + avatarUrl + '" alt="avatar">' : '🐙') + '</div><div><div class="gh-name">@' + username + '</div><div class="gh-sub">' + (user.public_repos||0) + ' repos · ' + (user.followers||0) + ' followers</div></div></div>';
-    if (commits > 0) {
-      html += '<div class="gh-commit-list">';
-      Object.keys(repos).forEach(function(repo) {
-        repos[repo].slice(0,3).forEach(function(msg) {
-          html += '<div class="gh-commit"><div class="gh-commit-dot"></div><div class="gh-commit-body"><div class="gh-commit-repo">' + repo + '</div><div class="gh-commit-msg">' + msg + '</div></div></div>';
-        });
-      });
-      html += '</div>';
-      html += '<div class="gh-stat-row"><div class="gh-stat"><div class="gh-stat-n" style="color:var(--grn)">' + commits + '</div><div class="gh-stat-l">Commits</div></div>' + (prs>0?'<div class="gh-stat"><div class="gh-stat-n" style="color:var(--ind3)">' + prs + '</div><div class="gh-stat-l">PRs</div></div>':'') + '<div class="gh-stat"><div class="gh-stat-n" style="color:var(--amb)">' + Object.keys(repos).length + '</div><div class="gh-stat-l">Repos</div></div></div>';
-    } else {
-      html += '<div style="font-size:13px;color:var(--t3);padding:12px 0">No commits yet today. Recent repos: <strong style="color:var(--t2)">' + (user.public_repos||0) + '</strong></div>';
-      var recentEvts = events.slice(0,3);
-      if (recentEvts.length) {
-        html += '<div class="gh-commit-list">';
-        recentEvts.forEach(function(e) {
-          if (e.type === 'PushEvent' && e.payload && e.payload.commits && e.payload.commits.length) {
-            var rname = e.repo.name.split('/')[1];
-            html += '<div class="gh-commit"><div class="gh-commit-dot" style="background:var(--t3)"></div><div class="gh-commit-body"><div class="gh-commit-repo">' + rname + '</div><div class="gh-commit-msg">' + e.payload.commits[0].message.split('\n')[0].substring(0,70) + '</div><div class="gh-commit-time">Recent</div></div></div>';
-          }
-        });
-        html += '</div>';
-      }
-    }
-    el.innerHTML = html;
-  } catch(e) {
-    el.innerHTML = '<div style="font-size:13px;color:var(--t3);padding:12px 0">Could not load GitHub data. Check username or connection.</div>';
-  }
-}
-document.getElementById('gh-settings-btn').addEventListener('click', function() { goPage('connect'); });
-
-// GitHub connect page
-document.getElementById('gh-save-connect').addEventListener('click', function() {
-  var v = document.getElementById('gh-inp-connect').value.trim();
-  if (!v) return;
-  localStorage.setItem('gh_user', v);
-  document.getElementById('gh-inp-connect').value = '';
-  loadGitHub();
-  goPage('today');
-});
-document.getElementById('gh-inp-connect').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') document.getElementById('gh-save-connect').click();
-});
-
-// Pre-fill github input if already set
-var savedGh = localStorage.getItem('gh_user');
-if (savedGh) document.getElementById('gh-inp-connect').value = savedGh;
-
-// FLIGHTS section
-function renderFlights() {
-  var el = document.getElementById('flights-section');
-  el.innerHTML = '<div class="connect-card"><div class="cc-top"><div class="cc-ico" style="background:linear-gradient(135deg,#0f3460,#4facfe)">✈️</div><div><div class="cc-name">Auto-detect Flights</div><div class="cc-sub">From email confirmations</div></div></div><div class="cc-desc">Connect Gmail to automatically detect flights, hotels and travel bookings. MyLife reads confirmation emails and shows your trips here — no manual entry needed.</div><button class="cc-btn" id="flights-connect-btn">Connect Gmail →</button></div>';
-  document.getElementById('flights-connect-btn').addEventListener('click', function() { goPage('connect'); });
+function loadGitHub(){
+  var username=localStorage.getItem("gh_user"),el=document.getElementById("gh-widget");
+  if(!username){el.innerHTML='<div class="gh-connect"><div class="gh-ct">Connect GitHub</div><div class="gh-cs">Enter your username to see today\'s commits.</div><div class="gh-ir"><input class="gh-inp" id="gh-il" placeholder="username"><button class="gh-sv" id="gh-il-sv">Save</button></div></div>';document.getElementById("gh-il-sv").addEventListener("click",function(){var v=document.getElementById("gh-il").value.trim();if(!v)return;localStorage.setItem("gh_user",v);var yi=document.getElementById("gh-inp-you");if(yi)yi.value=v;loadGitHub();});document.getElementById("gh-il").addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("gh-il-sv").click();});return;}
+  el.innerHTML='<div class="gh-card-wrap"><div class="shim w90" style="margin:16px"></div><div class="shim w65" style="margin:0 16px 16px"></div></div>';
+  var inner=el.querySelector(".gh-card-wrap");
+  Promise.all([fetch("https://api.github.com/users/"+username+"/events?per_page=50").then(function(r){return r.json();}),fetch("https://api.github.com/users/"+username).then(function(r){return r.json();})]).then(function(res){
+    var evts=res[0],user=res[1];if(!Array.isArray(evts))throw new Error("bad");
+    var commits=0,repos={},prs=0;
+    for(var i=0;i<evts.length;i++){var ev=evts[i];if(!ev.created_at||ev.created_at.indexOf(TODAY)!==0)continue;if(ev.type==="PushEvent"&&ev.payload&&ev.payload.commits){commits+=ev.payload.commits.length;var rn=ev.repo.name.split("/")[1];if(!repos[rn])repos[rn]=[];for(var k=0;k<ev.payload.commits.length;k++){var msg=ev.payload.commits[k].message||"";var nl=msg.indexOf(String.fromCharCode(10));if(nl>-1)msg=msg.substring(0,nl);repos[rn].push(msg.substring(0,65));}}if(ev.type==="PullRequestEvent")prs++;}
+    var html='<div class="gh-card-inner"><div class="gh-head"><div class="gh-ava">'+(user.avatar_url?'<img src="'+user.avatar_url+'" alt="">':'🐙')+'</div><div><div class="gh-un">@'+username+'</div><div class="gh-us">'+(user.public_repos||0)+' repos · '+(user.followers||0)+' followers</div></div></div>';
+    if(commits>0){var rkeys=Object.keys(repos);for(var ri=0;ri<rkeys.length&&ri<3;ri++){var msgs=repos[rkeys[ri]];for(var mi=0;mi<msgs.length&&mi<2;mi++){html+='<div class="gh-commit"><div class="gh-dot"></div><div class="gh-cb"><div class="gh-repo">'+rkeys[ri]+'</div><div class="gh-msg">'+msgs[mi]+'</div></div></div>';}}html+='<div class="gh-nums"><div><div class="gh-nv" style="color:var(--grn)">'+commits+'</div><div class="gh-nl">Commits today</div></div>'+(prs>0?'<div><div class="gh-nv" style="color:var(--ind)">'+prs+'</div><div class="gh-nl">PRs</div></div>':'')+'<div><div class="gh-nv" style="color:var(--amb)">'+Object.keys(repos).length+'</div><div class="gh-nl">Repos</div></div></div>';}
+    else{html+='<div style="font-size:13px;color:var(--t2);padding:8px 0">No commits today yet.</div>';for(var ei=0;ei<evts.length&&ei<3;ei++){var rev=evts[ei];if(rev.type==="PushEvent"&&rev.payload&&rev.payload.commits&&rev.payload.commits.length>0){var rm=rev.payload.commits[0].message||"";var rnl=rm.indexOf(String.fromCharCode(10));if(rnl>-1)rm=rm.substring(0,rnl);html+='<div class="gh-commit"><div class="gh-dot" style="background:var(--t3)"></div><div class="gh-cb"><div class="gh-repo">'+rev.repo.name.split("/")[1]+'</div><div class="gh-msg">'+rm.substring(0,65)+'</div></div></div>';}}html+='<div class="gh-nums"><div><div class="gh-nv" style="color:var(--ind)">'+(user.public_repos||0)+'</div><div class="gh-nl">Public repos</div></div><div><div class="gh-nv" style="color:var(--t2)">'+(user.followers||0)+'</div><div class="gh-nl">Followers</div></div></div>';}
+    html+="</div>";inner.innerHTML=html;
+  }).catch(function(){if(inner)inner.innerHTML='<div style="font-size:13px;color:var(--t3);padding:12px">Could not load. Check username.</div>';});
 }
 
-// ACTIVITY STATS (placeholder — requires native app for real Apple Health data)
-function initStats() {
-  document.getElementById('stat-steps').textContent = '—';
-  document.getElementById('stat-km').textContent = '—';
-  document.getElementById('stat-cal').textContent = '—';
-}
-document.getElementById('health-connect-btn').addEventListener('click', function() { goPage('connect'); });
+// FLIGHTS WIDGET
+document.getElementById("flights-w").innerHTML='<div class="fl-card"><div class="fl-top"><div class="fl-ico" style="background:linear-gradient(135deg,#0369a1,#38bdf8)">&#9992;&#65039;</div><div><div class="fl-name">Auto-detect Flights</div><div class="fl-sub">From email · or add manually in You tab</div></div></div><div class="fl-desc">Connect Gmail to auto-detect bookings, or add trips manually in the You tab to see them in your My Day summary.</div><button class="fl-btn" id="fl-cta">Add a trip manually</button></div>';
+document.getElementById("fl-cta").addEventListener("click",function(){goPage("you");});
 
-// GMAIL CONNECT
-document.getElementById('gmail-btn').addEventListener('click', function() {
-  alert('Gmail connection requires a backend server for secure OAuth. This feature is coming in the native app. For now, you can open Gmail directly from the Today page.');
-});
-document.getElementById('gcal-btn').addEventListener('click', function() {
-  nativeOpen('calshow://', 'https://calendar.google.com');
-});
-
-// NEWS
-async function fetchRSS(url) {
-  var r = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(url));
-  return new DOMParser().parseFromString((await r.json()).contents, 'text/xml');
-}
-function renderNews(items, id, limit) {
-  var el = document.getElementById(id);
-  if (!items || !items.length) { el.innerHTML = '<div style="padding:16px 0;font-size:13px;color:var(--t3)">Nothing loaded yet.</div>'; return; }
-  el.innerHTML = items.slice(0, limit||6).map(function(item, i) {
-    var hl = (item.querySelector('title')?.textContent || '').replace(/<[^>]*>/g,'');
-    var link = item.querySelector('link')?.textContent || '#';
-    var src = item.querySelector('source')?.textContent || '';
-    var color = COLORS[i % COLORS.length];
-    return '<a class="ni" href="' + link + '" target="_blank"><div class="ni-row"><div class="ni-bar" style="background:' + color + '"></div><div class="ni-b"><div class="ni-src">' + src + '</div><div class="ni-hl">' + hl.substring(0,130) + '</div><div class="ni-more" style="color:' + color + '">Read more ›</div></div></div></a>';
-  }).join('');
-}
-async function loadNews(query) {
-  var q = encodeURIComponent(query || 'World news');
-  try {
-    var results = await Promise.allSettled([
-      fetchRSS('https://news.google.com/rss/search?q=' + q + '&hl=en&gl=US&ceid=US:en'),
-      fetchRSS('https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en'),
-      fetchRSS('https://news.google.com/rss/search?q=business+technology&hl=en&gl=US&ceid=US:en')
-    ]);
-    var lItems = results[0].status==='fulfilled' ? [...results[0].value.querySelectorAll('item')] : [];
-    var wItems = results[1].status==='fulfilled' ? [...results[1].value.querySelectorAll('item')] : [];
-    var bItems = results[2].status==='fulfilled' ? [...results[2].value.querySelectorAll('item')] : [];
-    var homeItems = lItems.length ? lItems : wItems;
-    renderNews(homeItems, 'home-news', 3);
-    renderNews(lItems, 'lt-news', 8);
-    renderNews(wItems, 'world-news', 8);
-    renderNews(bItems, 'biz-news', 6);
-  } catch(e) {}
+// NEWS (for day page headlines)
+function fetchRSS(url){return fetch("https://api.allorigins.win/get?url="+encodeURIComponent(url)).then(function(r){return r.json();}).then(function(d){return new DOMParser().parseFromString(d.contents,"text/xml");});}
+function loadNews(){
+  var q=encodeURIComponent((uCity||"World")+" "+(uCountry||"news")+" today");
+  fetchRSS("https://news.google.com/rss/search?q="+q+"&hl=en&gl=US&ceid=US:en")
+    .then(function(doc){
+      var items=Array.prototype.slice.call(doc.querySelectorAll("item")).slice(0,6);
+      newsCache=items.map(function(item){var ti=item.querySelector("title");return{headline:ti?ti.textContent.replace(/<[^>]*>/g,""):"",link:item.querySelector("link")?item.querySelector("link").textContent:"#"};});
+      var el=document.getElementById("day-news");
+      if(el){el.innerHTML=newsCache.map(function(n,i){var col=COLORS[i%COLORS.length];return'<a class="ni-compact" href="'+n.link+'" target="_blank"><div class="ni-c-in"><div class="ni-c-bar" style="background:'+col+'"></div><div class="ni-c-hl">'+n.headline.substring(0,110)+'</div></div></a>';}).join("");}
+    })
+    .catch(function(){});
 }
 
 // REFRESH
-document.getElementById('rbtn').addEventListener('click', function() {
-  var svg = this.querySelector('svg');
-  svg.classList.add('rspin'); this.disabled = true;
-  getLocation();
-  Promise.allSettled([loadWeather(), loadAI(true), loadGitHub()]).then(function() {
-    svg.classList.remove('rspin');
-    document.getElementById('rbtn').disabled = false;
-  });
+document.getElementById("btn-rf").addEventListener("click",function(){
+  var ico=document.getElementById("ico-rf");ico.classList.add("rspin");this.disabled=true;var self=this;
+  getLocation();loadWeather();loadAI(true);loadGitHub();loadNews();
+  setTimeout(function(){ico.classList.remove("rspin");self.disabled=false;},4000);
 });
 
 // INIT
-initStats();
-renderFlights();
+setupStepBtns();
+renderPlaces();
+renderUpcoming();
+renderTripsForm();
 getLocation();
 loadGitHub();
 loadAI(false);
+loadNews();
 </script>
 </body>
 </html>
